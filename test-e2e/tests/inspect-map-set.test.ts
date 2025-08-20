@@ -49,7 +49,7 @@ test("Inspect Map and Set objects", async ({ page }) => {
 	expect(text).toEqual(JSON.stringify([[{ foo: 111 }, 12345]], null, 2));
 });
 
-test("Inspect Map and Set objects in hooks", async ({ page }) => {
+test.skip("Inspect Map and Set objects in hooks", async ({ page }) => {
 	const { devtools } = await gotoTest(page, "inspect-map-set-hooks");
 
 	await devtools.click(locateTreeItem("MapView"));

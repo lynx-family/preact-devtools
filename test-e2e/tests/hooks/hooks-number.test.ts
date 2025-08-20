@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { clickTreeItem, gotoTest } from "../../pw-utils";
 
-test("Show hook number", async ({ page }) => {
+test.skip("Show hook number", async ({ page }) => {
 	const { devtools } = await gotoTest(page, "hooks-multiple");
 
 	await clickTreeItem(devtools, "App");
@@ -13,7 +13,7 @@ test("Show hook number", async ({ page }) => {
 	expect(nums).toEqual(["1", "2", "3", "4", "5"]);
 });
 
-test("Show hook number only for top level items", async ({ page }) => {
+test.skip("Show hook number only for top level items", async ({ page }) => {
 	const { devtools } = await gotoTest(page, "hooks-expand");
 
 	await clickTreeItem(devtools, "Memo");

@@ -8,10 +8,10 @@ export interface BaseEvent<K extends string, T> {
 
 export function listenToDevtools<
 	K extends keyof DevtoolEvents,
-	T extends DevtoolEvents[K]
->(ctx: Window, type: K, callback: (message: T) => void) {
+	T extends DevtoolEvents[K],
+>(ctx: PreactDevtoolsCtx, type: K, callback: (message: T) => void) {
 	ctx.addEventListener("message", e => {
-		if (e.source === window && e.data.source === DevtoolsToClient) {
+		if (e.source === ctx && e.data.source === DevtoolsToClient) {
 			const data = e.data;
 			if (data.type === type) callback(data.data);
 		}
@@ -20,10 +20,10 @@ export function listenToDevtools<
 
 export function listenToPageHook<
 	K extends keyof DevtoolEvents,
-	T extends DevtoolEvents[K]
->(ctx: Window, type: K, callback: (message: T) => void) {
+	T extends DevtoolEvents[K],
+>(ctx: PreactDevtoolsCtx, type: K, callback: (message: T) => void) {
 	ctx.addEventListener("message", e => {
-		if (e.source === window && e.data.source === PageHookName) {
+		if (e.source === ctx && e.data.source === PageHookName) {
 			const data = e.data;
 			if (data.type === type) callback(data.data);
 		}
@@ -31,7 +31,7 @@ export function listenToPageHook<
 }
 
 export function sendToDevtools<K extends keyof DevtoolEvents>(
-	ctx: Window,
+	ctx: PreactDevtoolsCtx,
 	type: K,
 	data: DevtoolEvents[K],
 ) {
@@ -64,7 +64,7 @@ export interface PortPageHook {
 	) => void;
 }
 
-export function createPortForHook(ctx: Window): PortPageHook {
+export function createPortForHook(ctx: PreactDevtoolsCtx): PortPageHook {
 	return {
 		send: (type, message) => sendToDevtools(ctx, type, message),
 		listen: (type, callback) => listenToDevtools(ctx, type, callback),

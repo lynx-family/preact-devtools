@@ -1,0 +1,72 @@
+name: Publish to npm and GitHub Release
+
+on: workflow_dispatch
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write  # Required for OIDC
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Deps
+        run: npm i
+
+      - name: Get package version
+        id: package-version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Get commit hash
+        id: commit-hash
+        run: |
+          SHORT_SHA=$(git rev-parse --short=7 HEAD)
+          echo "sha=$SHORT_SHA" >> $GITHUB_OUTPUT
+
+      - name: Build package version
+        id: build-version
+        run: |
+          FULL_VERSION="${{ steps.package-version.outputs.version }}-${{ steps.commit-hash.outputs.sha }}"
+          echo "full_version=$FULL_VERSION" >> $GITHUB_OUTPUT
+          echo "TAG_NAME=$FULL_VERSION" >> $GITHUB_ENV
+
+      - name: Update package.json version
+        run: |
+          npm version ${{ steps.build-version.outputs.full_version }} --no-git-tag-version
+
+      # https://docs.npmjs.com/trusted-publishers#step-2-configure-your-cicd-workflow
+      # Ensure npm 11.5.1 or later is installed
+      - name: Update npm
+        run: npm install -g npm@latest
+
+      - name: Publish to npm
+        run: npm publish --tag latest
+
+      - name: Generate release notes
+        id: release-notes
+        run: |
+          RELEASE_NOTES=$(git log -1 --pretty=%B)
+          echo "notes<<EOF" >> $GITHUB_OUTPUT
+          echo "## Release ${{ env.TAG_NAME }}" >> $GITHUB_OUTPUT
+          echo "**Commit:** ${{ steps.commit-hash.outputs.sha }}" >> $GITHUB_OUTPUT
+          echo "**Published:** $(date -u)" >> $GITHUB_OUTPUT
+          echo "### Commit Message" >> $GITHUB_OUTPUT
+          echo "$RELEASE_NOTES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ env.TAG_NAME }}
+          release_name: Release ${{ env.TAG_NAME }}
+          body: ${{ steps.release-notes.outputs.notes }}
+          draft: false
+          prerelease: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

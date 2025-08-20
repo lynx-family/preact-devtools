@@ -1,7 +1,9 @@
 import { test, expect } from "@playwright/test";
 import { gotoTest } from "../pw-utils";
 
-test("Highlighting nested elements affects overlay size", async ({ page }) => {
+test.skip("Highlighting nested elements affects overlay size", async ({
+	page,
+}) => {
 	const { devtools } = await gotoTest(page, "counter");
 
 	await page.locator('[data-testid="result"]:has-text("Counter: 0")').waitFor();

@@ -71,7 +71,7 @@ function inspectHostNode() {
 	);
 }
 
-async function initDevtools() {
+async function initDevtools(ctx: PreactDevtoolsLDTCtx) {
 	initialized = true;
 	const { window, panel } = await showPanel();
 	panel.onShown.addListener(() => {
@@ -96,7 +96,7 @@ async function initDevtools() {
 
 	// Render our application
 	const container = window.document.getElementById("preact-devtools-root")!;
-	render(h(DevTools, { store, window }), container);
+	render(h(DevTools, { store, ctx }), container);
 }
 
 // Send messages from devtools to the content script
@@ -152,7 +152,7 @@ const IS_FIREFOX = isFirefox();
 port.onMessage.addListener(async message => {
 	if (!initialized) {
 		debug("initialize devtools panel");
-		await initDevtools();
+		await initDevtools(preactDevtoolsLDTCtx);
 	}
 
 	const tabId = chrome.devtools.inspectedWindow.tabId;

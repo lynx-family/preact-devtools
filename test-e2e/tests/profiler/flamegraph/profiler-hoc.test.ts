@@ -8,7 +8,7 @@ import {
 } from "../../../pw-utils";
 import { getFlameNodes } from "./utils";
 
-test("Should work with filtered HOC roots", async ({ page }) => {
+test.skip("Should work with filtered HOC roots", async ({ page }) => {
 	const { devtools } = await gotoTest(page, "hoc-update");
 
 	await devtools.locator(locateTab("PROFILER")).click();

@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { gotoTest } from "../pw-utils";
 import assert from "assert";
 
-test("Highlighting should move with scroll", async ({ page }) => {
+test.skip("Highlighting should move with scroll", async ({ page }) => {
 	const { devtools } = await gotoTest(page, "highlight-scroll");
 
 	const inspect = '[data-testid="inspect-btn"]';

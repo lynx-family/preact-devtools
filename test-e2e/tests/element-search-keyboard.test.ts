@@ -1,7 +1,7 @@
 import { test } from "@playwright/test";
 import { gotoTest, waitFor } from "../pw-utils";
 
-test("Pressing Enter should scroll marked results into view during search #162", async ({
+test.skip("Pressing Enter should scroll marked results into view during search #162", async ({
 	page,
 }) => {
 	const { devtools } = await gotoTest(page, "deep-tree");

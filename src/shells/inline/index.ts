@@ -3,10 +3,9 @@ export { createStore } from "../../view/store";
 import { render, h } from "preact";
 import { DevTools } from "../../view/components/Devtools";
 import { applyEvent } from "../../adapter/protocol/events";
-import { Store } from "../../view/store/types";
 import { PageHookName, DevtoolsToClient } from "../../constants";
 
-export function setupFrontendStore(ctx: Window) {
+export function setupFrontendStore(ctx: PreactDevtoolsLDTCtx) {
 	const store = createStore();
 
 	function handleClientEvents(e: MessageEvent) {
@@ -40,12 +39,11 @@ export function setupFrontendStore(ctx: Window) {
 	};
 }
 
-export function setupInlineDevtools(container: HTMLElement, ctx: Window) {
+export function setupInlineDevtools(
+	container: HTMLElement,
+	ctx: PreactDevtoolsLDTCtx,
+) {
 	const { store } = setupFrontendStore(ctx);
-	render(h(DevTools, { store, window: ctx }), container);
+	render(h(DevTools, { store, ctx }), container);
 	return store;
-}
-
-export function renderDevtools(store: Store, container: HTMLElement) {
-	render(h(DevTools, { store, window }), container);
 }

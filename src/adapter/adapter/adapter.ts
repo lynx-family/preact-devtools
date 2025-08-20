@@ -1,7 +1,7 @@
 import { DevtoolEvents, DevtoolsHook } from "../hook";
 import { getRendererByVNodeId, Renderer } from "../renderer";
 import { copyToClipboard } from "../../shells/shared/utils";
-import { createPicker } from "./picker";
+// import { createPicker } from "./picker";
 import { ID } from "../../view/store/types";
 import { createHightlighter } from "./highlight";
 import { parseFilters } from "./filter";
@@ -41,6 +41,13 @@ export interface InspectData {
 	suspended: boolean;
 	/** Preact version that rendered this VNode */
 	version: string;
+	__source: Source;
+}
+
+export interface Source {
+	fileName: string;
+	lineNumber: number;
+	columnNumber: number;
 }
 
 export function createAdapter(
@@ -48,6 +55,8 @@ export function createAdapter(
 	profiler: ProfilerState,
 	renderers: Map<number, Renderer>,
 ) {
+	const window = preactDevtoolsCtx;
+
 	const { listen, send, listenToPage } = port;
 
 	const forAll = (fn: (renderer: Renderer) => void) => {
@@ -56,7 +65,7 @@ export function createAdapter(
 		}
 	};
 
-	const highlight = createHightlighter(id =>
+	const highlight = createHightlighter(renderers, port, id =>
 		getRendererByVNodeId(renderers, id),
 	);
 
@@ -67,24 +76,24 @@ export function createAdapter(
 		}
 	};
 
-	const picker = createPicker(
-		window,
-		renderers,
-		id => {
-			highlight.highlight(id);
-			if (id > -1) {
-				inspect(id);
-				send("select-node", id);
-			}
-		},
-		() => {
-			send("stop-picker", null);
-			highlight.destroy();
-		},
-	);
+	// const picker = createPicker(
+	// 	window,
+	// 	renderers,
+	// 	id => {
+	// 		highlight.highlight(id);
+	// 		if (id > -1) {
+	// 			inspect(id);
+	// 			send("select-node", id);
+	// 		}
+	// 	},
+	// 	() => {
+	// 		send("stop-picker", null);
+	// 		highlight.destroy();
+	// 	},
+	// );
 
-	listen("start-picker", () => picker.start());
-	listen("stop-picker", () => picker.stop());
+	// listen("start-picker", () => picker.start());
+	// listen("stop-picker", () => picker.stop());
 
 	listen("copy", value => {
 		try {
@@ -101,7 +110,7 @@ export function createAdapter(
 		const res = getRendererByVNodeId(renderers, id)?.findDomForVNode(id);
 
 		if (res && res.length > 0) {
-			(window as any).__PREACT_DEVTOOLS__.$0 = res[0];
+			(globalThis as any).__PREACT_DEVTOOLS__.$0 = res[0];
 		}
 		inspect(id);
 	});
@@ -113,6 +122,18 @@ export function createAdapter(
 	listen("highlight", id => {
 		if (id == null) highlight.destroy();
 		else highlight.highlight(id);
+	});
+
+	listen("element-picked", ({ uniqueId }) => {
+		if (uniqueId == null) return;
+		const rendererList = [...renderers.values()];
+		// Unlike Chrome extension, we only have one renderer here
+		const id = rendererList[0].getIdByUniqueId(uniqueId);
+		if (id != null) {
+			port.send("element-picked-vnode-id", {
+				id,
+			});
+		}
 	});
 
 	listen("disconnect", () => {
@@ -185,7 +206,7 @@ export function createAdapter(
 		window.localStorage.setItem(PROFILE_RELOAD, JSON.stringify(options));
 
 		try {
-			window.location.reload();
+			lynx.reload({}, () => {});
 		} catch (err) {
 			// eslint-disable-next-line no-console
 			console.error("Preact Devtools was not able to reload the current page.");
@@ -205,7 +226,7 @@ export function createAdapter(
 		window.localStorage.setItem(STATS_RELOAD, "true");
 
 		try {
-			window.location.reload();
+			lynx.reload({}, () => {});
 		} catch (err) {
 			// eslint-disable-next-line no-console
 			console.error("Preact Devtools was not able to reload the current page.");

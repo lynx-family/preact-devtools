@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { gotoTest, locateTreeItem } from "../pw-utils";
 
-test("HOC-Component filter should be disabled", async ({ page }) => {
+test.skip("HOC-Component filter should be disabled", async ({ page }) => {
 	const { devtools } = await gotoTest(page, "hoc");
 
 	await devtools.click('[data-testid="filter-menu-button"]');

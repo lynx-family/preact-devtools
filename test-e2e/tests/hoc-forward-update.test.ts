@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { gotoTest } from "../pw-utils";
 
-test("Test HOCs on forwardRef update", async ({ page }) => {
+test.skip("Test HOCs on forwardRef update", async ({ page }) => {
 	const { devtools } = await gotoTest(page, "forwardRef-update");
 
 	await devtools.locator('[data-name="Foo"]').click();

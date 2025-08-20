@@ -7,7 +7,7 @@ import treeBarStyles from "../../../elements/TreeBar.module.css";
 import { useCallback, useState } from "preact/hooks";
 import { FlameGraphMode } from "../../flamegraph/FlameGraphMode";
 import {
-	getCommitInitalSelectNodeId,
+	getCommitInitialSelectNodeId,
 	resetProfiler,
 	startProfiling,
 	stopProfiling,
@@ -41,18 +41,14 @@ export function TimelineBar() {
 
 	const onCommitChange = useCallback(
 		(n: number) => {
-			const {
-				activeCommitIdx,
-				selectedNodeId,
-				activeCommit,
-				flamegraphType,
-			} = store.profiler;
+			const { activeCommitIdx, selectedNodeId, activeCommit, flamegraphType } =
+				store.profiler;
 
 			activeCommitIdx.value = n;
 			const commit = activeCommit.value;
 			if (!commit) return;
 
-			selectedNodeId.value = getCommitInitalSelectNodeId(
+			selectedNodeId.value = getCommitInitialSelectNodeId(
 				commit,
 				flamegraphType.value,
 			);

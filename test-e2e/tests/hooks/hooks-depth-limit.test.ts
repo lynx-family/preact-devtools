@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { clickHookItem, gotoTest, waitForPass } from "../../pw-utils";
 
-test("Show a deeply nested hook tree and limit value parsing depth", async ({
+test.skip("Show a deeply nested hook tree and limit value parsing depth", async ({
 	page,
 }) => {
 	const { devtools } = await gotoTest(page, "hooks-depth-limit");

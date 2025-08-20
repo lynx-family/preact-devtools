@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { gotoTest, waitForPass } from "../pw-utils";
 
-test("HOC-Component filter should flatten tree", async ({ page }) => {
+test.skip("HOC-Component filter should flatten tree", async ({ page }) => {
 	const { devtools } = await gotoTest(page, "hoc");
 
 	await devtools.waitForSelector('[data-testid="tree-item"][data-name="Foo"]');

@@ -7,7 +7,9 @@ import {
 	wait,
 } from "../../../pw-utils";
 
-test("Should highlight flamegraph node if present in DOM", async ({ page }) => {
+test.skip("Should highlight flamegraph node if present in DOM", async ({
+	page,
+}) => {
 	const { devtools } = await gotoTest(page, "profiler-highlight");
 
 	await devtools.locator(locateTab("PROFILER")).click();

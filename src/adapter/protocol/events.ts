@@ -1,108 +1,12 @@
-import { flushTable, StringTable } from "./string-table";
 import { Store } from "../../view/store/types";
-import { batch } from "@preact/signals-core";
+// import { batch } from "@preact/signals-core";
 import { recordProfilerCommit } from "../../view/components/profiler/data/commits";
 import { ops2Tree } from "./operations";
 import { applyOperationsV1 } from "./legacy/operationsV1";
-import { OperationInfo, Stats, stats2ops } from "../shared/stats";
+import { OperationInfo } from "../shared/stats";
 import { DevtoolEvents } from "../hook";
 
-export enum MsgTypes {
-	ADD_ROOT = 1,
-	ADD_VNODE = 2, // Used by Preact 10.1.x
-	REMOVE_VNODE = 3,
-	UPDATE_VNODE_TIMINGS = 4, // Used by Preact 10.1.x
-	REORDER_CHILDREN = 5,
-	RENDER_REASON = 6,
-	COMMIT_STATS = 7,
-	HOC_NODES = 8,
-}
-
-// Event Examples:
-//
-// ADD_ROOT
-//   id
-//
-// ADD_VNODE
-//   id
-//   type
-//   parent
-//   owner
-//   name
-//   key
-//
-// ADD_VNODE_V2
-//   id
-//   type
-//   parent
-//   owner
-//   name
-//   key
-//   startTime
-//   duration
-//
-// REMOVE_VNODE
-//   id
-//
-// UPDATE_VNODE_TIMINGS
-//   id
-//   duration
-//
-// UPDATE_VNODE_TIMINGS_V2
-//   id
-//   startTime
-//   duration
-//
-// REORDER_CHILDREN
-//   id
-//   childrenCount
-//   childId
-//   childId
-//   ...
-//
-// RENDER_REASON
-//   id
-//   type
-//   stringsCount
-//   ...stringIds
-//
-// COMMIT_STATS -> Check `stats.ts`
-//
-// HOC_NODES
-//  vnodeId
-//  stringsCounts
-//  ...stringIds
-//
-export interface Commit {
-	rootId: number;
-	strings: StringTable;
-	unmountIds: number[];
-	operations: number[];
-	stats: Stats | null;
-}
-
-/**
- * Collect all relevant data from a commit and convert it to a message
- * the detools can understand
- */
-export function flush(commit: Commit) {
-	const { rootId, unmountIds, operations, strings, stats } = commit;
-	if (unmountIds.length === 0 && operations.length === 0) return;
-
-	const msg = [rootId, ...flushTable(strings)];
-	if (unmountIds.length > 0) {
-		msg.push(MsgTypes.REMOVE_VNODE, unmountIds.length, ...unmountIds);
-	}
-
-	for (let i = 0; i < operations.length; i++) {
-		msg.push(operations[i]);
-	}
-	if (stats !== null) {
-		stats2ops(stats, msg);
-	}
-
-	return { type: "operation_v2", data: msg };
-}
+const { postPluginMessage } = window as any;
 
 function sumArrays(a: number[], b: number[]) {
 	for (let i = 0; i < b.length; i++) {
@@ -198,6 +102,7 @@ export function applyOperationsV2(store: Store, data: number[]) {
 }
 
 export function applyEvent(store: Store, type: keyof DevtoolEvents, data: any) {
+	if (__DEBUG__) console.log("NOTICE: devtools applyEvent", type, data);
 	switch (type) {
 		case "attach":
 			if (!store.profiler.isSupported.value) {
@@ -220,9 +125,10 @@ export function applyEvent(store: Store, type: keyof DevtoolEvents, data: any) {
 			applyOperationsV1(store, data);
 			break;
 		case "operation_v2":
-			batch(() => {
-				applyOperationsV2(store, data);
-			});
+			// batch(() => {
+			// What for signals works with react-lynx
+			applyOperationsV2(store, data);
+			// });
 			break;
 		case "inspect-result": {
 			const { props, state, context } = store.sidebar;
@@ -256,6 +162,44 @@ export function applyEvent(store: Store, type: keyof DevtoolEvents, data: any) {
 			}
 
 			store.roots.value = data;
+			break;
+		}
+		case "init": {
+			// We have to clear the state manually since browser will reload the extension on reload, but HDT does not reload plugin on react-lynx app reload
+			store.roots.value = [];
+			break;
+		}
+		case "preact-devtools-highlight": {
+			const { uniqueId } = data || {};
+			if (uniqueId != null) {
+				globalThis.preactDevtoolsLDTCtx.highlightUniqueId = uniqueId;
+				try {
+					if (
+						globalThis.preactDevtoolsLDTCtx.devtoolsProps
+							?.onPreactDevtoolsPanelUINodeIdSelected
+					) {
+						globalThis.preactDevtoolsLDTCtx.devtoolsProps?.onPreactDevtoolsPanelUINodeIdSelected?.(
+							uniqueId,
+						);
+					} else {
+						postPluginMessage?.("uitree-drawer")("Extensions.uitree-drawer", {
+							UINodeId: uniqueId,
+						});
+						postPluginMessage?.("uitree-panel")("Extensions.uitree-panel", {
+							UINodeId: uniqueId,
+						});
+					}
+				} catch (err) {
+					console.error("preact-devtools-highlight error", err);
+				}
+			}
+			break;
+		}
+		case "element-picked-vnode-id": {
+			const { id } = data || {};
+			if (id != null) {
+				store.selection.selectById(id);
+			}
 			break;
 		}
 	}

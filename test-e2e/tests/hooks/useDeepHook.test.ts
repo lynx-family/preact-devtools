@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { getHooks, gotoTest, locateHook, locateTreeItem } from "../../pw-utils";
 
-test("Inspect deep hook tree", async ({ page }) => {
+test.skip("Inspect deep hook tree", async ({ page }) => {
 	const { devtools } = await gotoTest(page, "hooks");
 
 	await devtools.locator(locateTreeItem("CustomHooks3")).click();

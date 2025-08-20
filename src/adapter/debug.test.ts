@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { fromSnapshot, toStringTable } from "./debug";
-import { MsgTypes } from "./protocol/events";
+import { MsgTypes } from "./protocol/events-types";
 import { DevNodeType } from "../view/store/types";
 
 describe("debug", () => {

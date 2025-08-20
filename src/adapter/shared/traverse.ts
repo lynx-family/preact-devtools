@@ -1,6 +1,6 @@
 import { ID } from "../../view/store/types";
 import { FilterState } from "../adapter/filter";
-import { Commit, MsgTypes } from "../protocol/events";
+import { Commit, MsgTypes } from "../protocol/events-types";
 import { getStringId } from "../protocol/string-table";
 import {
 	getOrCreateVNodeId,
@@ -14,9 +14,9 @@ import { ProfilerState } from "../adapter/profiler";
 import { getDevtoolsType, RendererConfig } from "./renderer";
 import { RenderReason, RenderReasonData } from "./renderReasons";
 import { createStats, DiffType, updateDiffStats, updateOpStats } from "./stats";
-import { NodeType } from "../../constants";
+// import { NodeType } from "../../constants";
 import { getDiffType, recordComponentStats } from "./stats";
-import { measureUpdate } from "../adapter/highlightUpdates";
+// import { measureUpdate } from "../adapter/highlightUpdates";
 import { PreactBindings, SharedVNode } from "./bindings";
 import { VNodeTimings } from "./timings";
 import { getSignalTextName } from "./utils";
@@ -57,42 +57,42 @@ function detectHocs(commit: Commit, name: string, id: ID, hocs: string[]) {
 	return { name, hocs };
 }
 
-function isTextNode(dom: HTMLElement | Text | null): dom is Text {
-	return dom != null && dom.nodeType === NodeType.Text;
-}
+// function isTextNode(dom: HTMLElement | Text | null): dom is Text {
+// 	return dom != null && dom.nodeType === NodeType.Text;
+// }
 
-function updateHighlight<T extends SharedVNode>(
-	profiler: ProfilerState,
-	vnode: T,
-	bindings: PreactBindings<T>,
-) {
-	if (profiler.highlightUpdates && bindings.isComponent(vnode)) {
-		const stack: Array<T | null | undefined> = [vnode];
-		let item;
-		let dom;
-		while ((item = stack.shift()) !== undefined) {
-			// Account for placholders/holes
-			if (item === null) continue;
+// function updateHighlight<T extends SharedVNode>(
+// 	profiler: ProfilerState,
+// 	vnode: T,
+// 	bindings: PreactBindings<T>,
+// ) {
+// 	if (profiler.highlightUpdates && bindings.isComponent(vnode)) {
+// 		const stack: Array<T | null | undefined> = [vnode];
+// 		let item;
+// 		let dom;
+// 		while ((item = stack.shift()) !== undefined) {
+// 			// Account for placholders/holes
+// 			if (item === null) continue;
 
-			if (!bindings.isComponent(item)) {
-				dom = bindings.getDom(item);
-				break;
-			}
+// 			if (!bindings.isComponent(item)) {
+// 				dom = bindings.getDom(item);
+// 				break;
+// 			}
 
-			stack.push(...bindings.getActualChildren(item));
-		}
+// 			stack.push(...bindings.getActualChildren(item));
+// 		}
 
-		if (dom === null || dom === undefined) return;
+// 		if (dom === null || dom === undefined) return;
 
-		if (isTextNode(dom)) {
-			dom = dom.parentNode as HTMLElement;
-		}
-		if (dom && !profiler.pendingHighlightUpdates.has(dom)) {
-			profiler.pendingHighlightUpdates.add(dom);
-			measureUpdate(profiler.updateRects, dom);
-		}
-	}
-}
+// 		if (isTextNode(dom)) {
+// 			dom = dom.parentNode as HTMLElement;
+// 		}
+// 		if (dom && !profiler.pendingHighlightUpdates.has(dom)) {
+// 			profiler.pendingHighlightUpdates.add(dom);
+// 			measureUpdate(profiler.updateRects, dom);
+// 		}
+// 	}
+// }
 
 export function getFilteredChildren<T extends SharedVNode>(
 	vnode: T,
@@ -225,6 +225,7 @@ function mount<T extends SharedVNode>(
 
 	if (root || !skip) {
 		const id = getOrCreateVNodeId(ids, vnode);
+		if (!id) return;
 		if (root) {
 			commit.operations.push(MsgTypes.ADD_ROOT, id);
 		}
@@ -266,7 +267,7 @@ function mount<T extends SharedVNode>(
 			commit.operations.push(MsgTypes.RENDER_REASON, id, RenderReason.MOUNT, 0);
 		}
 
-		updateHighlight(profiler, vnode, bindings);
+		// updateHighlight(profiler, vnode, bindings);
 
 		ancestorId = id;
 	}
@@ -464,7 +465,7 @@ function update<T extends SharedVNode>(
 						timingsByVNode,
 						oldVNode,
 						vnode,
-				  );
+					);
 		if (reason !== null) {
 			const count = reason.items ? reason.items.length : 0;
 			commit.operations.push(MsgTypes.RENDER_REASON, id, reason.type, count);
@@ -476,7 +477,7 @@ function update<T extends SharedVNode>(
 		}
 	}
 
-	updateHighlight(profiler, vnode, bindings);
+	// updateHighlight(profiler, vnode, bindings);
 
 	const oldChildren = oldVNode
 		? bindings

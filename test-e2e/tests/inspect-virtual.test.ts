@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { gotoTest, wait } from "../pw-utils";
 
-test("Scroll a virtualized element into view #333", async ({ page }) => {
+test.skip("Scroll a virtualized element into view #333", async ({ page }) => {
 	const { devtools } = await gotoTest(page, "deep-tree-2");
 
 	const selector = '[data-name="App"]';

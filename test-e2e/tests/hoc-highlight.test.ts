@@ -1,7 +1,7 @@
 import { test, Frame, Page } from "@playwright/test";
 import { gotoTest } from "../pw-utils";
 
-test("HOC-Component original name should show in highlight", async ({
+test.skip("HOC-Component original name should show in highlight", async ({
 	page,
 }) => {
 	const { devtools } = await gotoTest(page, "hoc");

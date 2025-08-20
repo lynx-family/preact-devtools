@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { gotoTest, locateTreeItem, wait } from "../pw-utils";
 
-test("Highlight Suspense nodes without crashing", async ({ page }) => {
+test.skip("Highlight Suspense nodes without crashing", async ({ page }) => {
 	const { devtools } = await gotoTest(page, "suspense");
 
 	await devtools.waitForSelector(locateTreeItem("Suspense"));

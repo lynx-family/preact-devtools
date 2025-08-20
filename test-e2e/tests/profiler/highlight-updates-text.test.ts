@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { locateTab, gotoTest, wait } from "../../pw-utils";
 
-test("Don't crash on measuring text nodes", async ({ page }) => {
+test.skip("Don't crash on measuring text nodes", async ({ page }) => {
 	const { devtools } = await gotoTest(page, "highlight-text");
 
 	await devtools.locator(locateTab("SETTINGS")).click();

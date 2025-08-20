@@ -1,15 +1,19 @@
 import { BaseEvent, PortPageHook } from "../adapter/port";
-import { Commit, flush } from "../protocol/events";
+import { Commit } from "../protocol/events-types";
+import { flush } from "../protocol/events-react-lynx";
 import { FunctionalComponent, ComponentConstructor, Options } from "preact";
 import { ID, DevNodeType } from "../../view/store/types";
 import { newRootData, traverse } from "./utils";
 import { FilterState } from "../adapter/filter";
 import { Renderer } from "../renderer";
-import { startDrawing } from "../adapter/highlightUpdates";
+// import { startDrawing } from "../adapter/highlightUpdates";
 import { setIn, setInCopy } from "../shared/serialize";
 import { createStats, OperationInfo } from "../shared/stats";
 import { ProfilerState } from "../adapter/profiler";
 import {
+	getIdByUniqueId,
+	getUniqueListIdById,
+	getUniqueListIdBySnapshotId,
 	getVNodeById,
 	getVNodeId,
 	hasVNodeId,
@@ -134,6 +138,10 @@ export function createRenderer<T extends SharedVNode>(
 		},
 
 		getVNodeById: id => getVNodeById(ids, id),
+		getUniqueListIdById: id => getUniqueListIdById(ids, id),
+		getUniqueListIdBySnapshotId: snapshotId =>
+			getUniqueListIdBySnapshotId(ids, snapshotId),
+		getIdByUniqueId: uniqueId => getIdByUniqueId(ids, uniqueId),
 		getDisplayName(vnode) {
 			return bindings.getDisplayName(vnode, config);
 		},
@@ -302,7 +310,8 @@ export function createRenderer<T extends SharedVNode>(
 			if (!ev) return;
 
 			if (profiler.updateRects.size > 0) {
-				startDrawing(profiler.updateRects);
+				// TODO: make this work
+				// startDrawing(profiler.updateRects);
 				profiler.pendingHighlightUpdates.clear();
 			}
 

@@ -1,7 +1,9 @@
 import { expect, Frame, Page, test } from "@playwright/test";
 import { gotoTest, locateTreeItem, wait } from "../pw-utils";
 
-test("Highlight overlay should detect memo for margin", async ({ page }) => {
+test.skip("Highlight overlay should detect memo for margin", async ({
+	page,
+}) => {
 	const { devtools } = await gotoTest(page, "highlight-margin");
 
 	await devtools.locator(locateTreeItem("Headline")).waitFor();

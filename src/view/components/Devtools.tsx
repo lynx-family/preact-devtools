@@ -1,4 +1,5 @@
 import { h, Fragment } from "preact";
+import { useEffect } from "preact/hooks";
 import { AppCtx, EmitCtx, WindowCtx } from "../store/react-bindings";
 import { Store, Panel } from "../store/types";
 import { Elements } from "./elements/Elements";
@@ -10,8 +11,54 @@ import { ThemeSwitcher } from "./ThemeSwitcher";
 import { Settings } from "./settings/Settings";
 import { StatsPanel } from "./stats/StatsPanel";
 
-export function DevTools(props: { store: Store; window: Window }) {
+const { addPluginEventListener } = window as any;
+
+export function DevTools(props: { store: Store; ctx: PreactDevtoolsLDTCtx }) {
 	const panel = props.store.activePanel.value;
+
+	useEffect(() => {
+		// notify react-lynx that we need an init if there is no root
+		if (props.store.roots.value.length === 0) {
+			props.ctx.devtoolsProps.postMessage("Remote.Customized.CDP", {
+				method: "Page.reload",
+				params: {},
+			});
+		}
+	});
+
+	useEffect(() => {
+		const onUINodeIdSelected = (UINodeId?: number) => {
+			if (UINodeId == null) return;
+			if (UINodeId === globalThis.preactDevtoolsLDTCtx.highlightUniqueId) {
+				if (__DEBUG__) {
+					console.log(
+						`skip because unique id of ${UINodeId} has been highlighted`,
+					);
+				}
+				return;
+			}
+
+			props.store.emit("element-picked", {
+				uniqueId: UINodeId,
+			});
+		};
+
+		if (props.ctx.devtoolsProps.addOnScreenCastPanelUINodeIdSelectedListener) {
+			props.ctx.devtoolsProps.addOnScreenCastPanelUINodeIdSelectedListener?.(
+				UINodeId => {
+					onUINodeIdSelected(UINodeId);
+				},
+			);
+		} else {
+			addPluginEventListener?.("uitree-drawer")(
+				"Extensions.uitree-drawer",
+				(msg: any) => {
+					const { UINodeId } = msg || {};
+					onUINodeIdSelected(UINodeId);
+				},
+			);
+		}
+	}, []);
 
 	const showElements = panel === Panel.ELEMENTS;
 	const showProfiler = panel === Panel.PROFILER;
@@ -19,7 +66,7 @@ export function DevTools(props: { store: Store; window: Window }) {
 	const showStats = panel === Panel.STATISTICS;
 
 	return (
-		<WindowCtx.Provider value={props.window}>
+		<WindowCtx.Provider value={props.ctx}>
 			<EmitCtx.Provider value={props.store.emit}>
 				<AppCtx.Provider value={props.store}>
 					<Fragment>

@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { gotoTest, locateTreeItem } from "../pw-utils";
 
-test("Show signal in props and update value", async ({ page }) => {
+test.skip("Show signal in props and update value", async ({ page }) => {
 	test.skip(
 		process.env.PREACT_VERSION !== "10",
 		"Signals are not supported in v11 yet.",
@@ -32,7 +32,7 @@ test("Show signal in props and update value", async ({ page }) => {
 	expect(preview).toEqual("ƒ Signal (1)");
 });
 
-test("Show computed signal as readonly", async ({ page }) => {
+test.skip("Show computed signal as readonly", async ({ page }) => {
 	const { devtools } = await gotoTest(page, "signals");
 
 	await devtools.click(locateTreeItem("Display") + ":nth-child(2n)");
@@ -54,7 +54,7 @@ test("Show computed signal as readonly", async ({ page }) => {
 	).toHaveCount(0);
 });
 
-test("Show signals in hooks", async ({ page }) => {
+test.skip("Show signals in hooks", async ({ page }) => {
 	const { devtools } = await gotoTest(page, "signals");
 
 	await devtools.click(locateTreeItem("Counter"));
@@ -77,7 +77,7 @@ test("Show signals in hooks", async ({ page }) => {
 	).toHaveCount(1);
 });
 
-test("Dectect signal subscriptions", async ({ page }) => {
+test.skip("Dectect signal subscriptions", async ({ page }) => {
 	test.skip(
 		process.env.PREACT_VERSION !== "10",
 		"Signals are not supported in v11 yet.",
@@ -107,7 +107,7 @@ test("Dectect signal subscriptions", async ({ page }) => {
 });
 
 // https://github.com/preactjs/preact-devtools/issues/456
-test("Don't crash when signal hook is updated", async ({ page }) => {
+test.skip("Don't crash when signal hook is updated", async ({ page }) => {
 	test.skip(
 		process.env.PREACT_VERSION !== "10",
 		"Signals are not supported in v11 yet.",

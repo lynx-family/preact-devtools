@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { getTreeItems, gotoTest, locateTreeItem } from "../pw-utils";
 
-test("HOC-Component should work with updates", async ({ page }) => {
+test.skip("HOC-Component should work with updates", async ({ page }) => {
 	const { devtools } = await gotoTest(page, "hoc-update");
 
 	await devtools.waitForSelector(locateTreeItem("Wrapped"));

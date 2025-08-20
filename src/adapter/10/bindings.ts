@@ -1,9 +1,6 @@
 import { HookType } from "../shared/hooks";
 import type { Component, VNode } from "preact";
-import type {
-	Component as IComponent,
-	VNode as IVNode,
-} from "preact/src/internal";
+import type { Component as IComponent, VNode as IVNode } from "./internal";
 import { ComponentHooks, HookState, PreactBindings } from "../shared/bindings";
 import { RendererConfig } from "../shared/renderer";
 import { getRenderReasonPost } from "./renderReason";

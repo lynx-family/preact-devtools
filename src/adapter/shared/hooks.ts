@@ -102,7 +102,8 @@ export function addHookStack(type: HookType) {
 		) {
 			trim += 1;
 		}
-		stack = stack.slice(trim, ancestorIdx);
+		// Lynx has one more `call at call (native)` stack, we need `- 1` here
+		stack = stack.slice(trim, ancestorIdx - 1);
 	}
 
 	const normalized: HookLocation[] = [];
@@ -117,9 +118,11 @@ export function addHookStack(type: HookType) {
 		const next = stack[i + 1];
 		normalized.push({
 			name: frame.name,
-			location: `${next.fileName.replace(window.origin, "")}:${next.line}:${
-				next.column
-			}`,
+			// file://view2/.rspeedy/main/background.ed172d51.js -> /.rspeedy/main/background.ed172d51.js
+			location: `${next.fileName.replace(
+				/^file:\/\/[^/]*/,
+				"",
+			)}:${next.line}:${next.column}`,
 		});
 	}
 
@@ -192,7 +195,10 @@ export function parseHookData<T extends SharedVNode>(
 					// The user should be able to click through the value
 					// properties if the value is an object. We parse it
 					// separately and append it as children to our hook node
-					if (typeof rawValue === "object" && !(rawValue instanceof Element)) {
+					if (
+						typeof rawValue === "object" &&
+						!(rawValue instanceof preactDevtoolsCtx.Node)
+					) {
 						const valueTree = parseProps(value, id, 8, 1, name);
 						children = valueTree.get(id)!.children;
 
@@ -224,7 +230,7 @@ export function parseHookData<T extends SharedVNode>(
 						? {
 								index: hookIdx,
 								type,
-						  }
+							}
 						: frame.name,
 					value,
 					index: hookIdx,

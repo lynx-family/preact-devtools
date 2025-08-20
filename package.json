@@ -1,24 +1,13 @@
 {
-	"name": "preact-devtools",
+	"name": "@lynx-js/preact-devtools",
 	"version": "5.0.1",
 	"description": "Preact Devtools Extension",
-	"main": "dist/preact-devtools.js",
-	"module": "dist/preact-devtools.module.js",
-	"types": "types/devtools.d.ts",
-	"exports": {
-		".": {
-			"types": "./dist/inline/types/shells/shared/panel/panel.d.ts",
-			"import": "./dist/inline/panel/panel.js"
-		},
-		"./client": {
-			"types": "./dist/inline/types/shells/shared/installHook.d.ts",
-			"import": "./dist/inline/client.js"
-		}
-	},
+	"main": "lib/react-lynx/index.js",
+	"types": "lib/react-lynx/index.d.ts",
 	"scripts": {
 		"type-check": "tsc --noEmit",
 		"prebuild": "npm run type-check",
-		"prepublishOnly": "npm run run build:inline",
+		"prepublishOnly": "npm run build:lynx",
 		"build": "node tools/build.mjs --browser chrome,edge,firefox,inline && npm run build:inline:types",
 		"build:chrome": "node tools/build.mjs --browser chrome",
 		"build:edge": "node tools/build.mjs --browser edge",
@@ -37,22 +26,35 @@
 		"dev:serve": "vite test-e2e/fixtures --port 8100",
 		"run:chrome": "node tools/build.mjs --browser chrome --debug && mkdir -p ./profiles/chrome && node tools/run-chrome.js",
 		"run:firefox": "node tools/build.mjs --browser firefox --debug && mkdir -p ./profiles/firefox && web-ext run --verbose --devtools --source-dir ./dist/firefox-debug/ --start-url https://preactjs.com --firefox-profile=./profiles/firefox --keep-profile-changes",
-		"release": "node tools/release.js"
+		"release": "node tools/release.js",
+		"build:ldt-plugin": "rsbuild build --config ldt-plugin/rsbuild.config.ts",
+		"dev:ldt-plugin": "rsbuild dev --config ldt-plugin/rsbuild.config.ts",
+		"test:lynx": "mocha -r ignore-styles -r tsx --extensions=ts,tsx,js --watch-files src -r tools/test-setup-lynx.js 'src/**/*.test.{ts,tsx}'",
+		"build:lib": "tsc --project tsconfig.build.json",
+		"build:lynx": "npm run build:ldt-plugin && npm run build:lib"
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/marvinhagemeister/preact-devtools.git"
+		"url": "git+https://github.com/lynx-family/preact-devtools.git"
 	},
-	"author": "Marvin Hagemeister <hello@marvinh.dev>",
+	"author": {
+		"name": "Yiming Li",
+		"email": "yimingli.cs@gmail.com"
+	},
 	"license": "MIT",
 	"devDependencies": {
 		"@babel/core": "^7.18.10",
 		"@babel/plugin-syntax-typescript": "^7.18.6",
 		"@babel/plugin-transform-react-jsx": "^7.18.10",
+		"@lynx-js/react": "0.112.2",
+		"@lynx-js/testing-environment": "0.1.5",
+		"@lynx-js/types": "^3.3.0",
 		"@playwright/test": "^1.51.1",
 		"@preact/preset-vite": "^2.8.2",
 		"@preact/signals": "^1.2.3",
 		"@prefresh/vite": "^2.4.5",
+		"@rsbuild/core": "^1.4.11",
+		"@rsbuild/plugin-preact": "^1.5.1",
 		"@testing-library/preact": "^3.2.3",
 		"@types/archiver": "^5.3.1",
 		"@types/babel__core": "^7.1.19",
@@ -85,11 +87,11 @@
 		"lint-staged": "^10.4.0",
 		"mocha": "^11.1.0",
 		"mri": "^1.2.0",
-		"preact": "^10.25.1",
 		"prettier": "^3.5.3",
 		"sinon": "^19.0.4",
 		"tar": "^6.1.11",
 		"ts-node": "^10.9.2",
+		"tsx": "^4.20.3",
 		"typescript": "^5.4.5",
 		"vite": "^5.2.10",
 		"web-ext": "^8.5.0"
@@ -98,14 +100,12 @@
 		"errorstacks": "^2.4.1",
 		"htm": "^3.1.1"
 	},
-	"peerDependencies": {
-		"preact": "10.x"
-	},
 	"files": [
-		"types/",
-		"dist/inline/",
+		"lib/",
+		"dist/",
 		"README.md",
-		"LICENSE"
+		"LICENSE",
+		"CHANGELOG.md"
 	],
 	"prettier": {
 		"useTabs": true,
@@ -148,7 +148,7 @@
 			"@typescript-eslint/no-var-requires": "off",
 			"@typescript-eslint/camelcase": "off",
 			"@typescript-eslint/ban-ts-ignore": "off",
-			"no-console": "error",
+			"no-console": "warn",
 			"no-mixed-spaces-and-tabs": "off",
 			"react/prop-types": "off",
 			"react/no-unknown-property": [
@@ -178,5 +178,8 @@
 		"hooks": {
 			"pre-commit": "lint-staged"
 		}
+	},
+	"publishConfig": {
+		"access": "public"
 	}
 }

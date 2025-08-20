@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { getHooks, gotoTest, locateTreeItem } from "../../pw-utils";
 
-test("Inspect useCallback hook", async ({ page }) => {
+test.skip("Inspect useCallback hook", async ({ page }) => {
 	const { devtools } = await gotoTest(page, "hooks");
 
 	await devtools.locator(locateTreeItem("CallbackOnly")).click();

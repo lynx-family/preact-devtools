@@ -11,6 +11,9 @@ export type ObjPath = Array<string | number>;
 export interface Renderer<T extends SharedVNode = SharedVNode> {
 	refresh?(): void;
 	getVNodeById(id: ID): T | null;
+	getUniqueListIdById(id: ID): number[] | null;
+	getUniqueListIdBySnapshotId(snapshotId: number): number[] | null;
+	getIdByUniqueId(uniqueId: number): ID | null;
 	getDisplayName(vnode: T): string;
 	findDomForVNode(id: ID): Array<HTMLElement | Text | null> | null;
 	findVNodeIdForDom(node: HTMLElement | Text): number;

@@ -35,12 +35,14 @@ export function TreeBar() {
 			<div class={s.btnWrapper}>
 				<IconBtn
 					active={isPicking}
-					title="Pick a Component from the page"
+					// TODO: make this work
+					title="(Not supported yet) Pick a Component from the page"
 					testId="inspect-btn"
 					onClick={() => {
 						store.isPicking.value = !isPicking;
 						store.notify(!isPicking ? "start-picker" : "stop-picker", null);
 					}}
+					disabled
 				>
 					<Picker />
 				</IconBtn>

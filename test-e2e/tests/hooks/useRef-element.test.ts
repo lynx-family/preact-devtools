@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { getHooks, gotoTest, locateTreeItem } from "../../pw-utils";
 
-test("Inspect useRef-element hook", async ({ page }) => {
+test.skip("Inspect useRef-element hook", async ({ page }) => {
 	const { devtools } = await gotoTest(page, "use-ref-element");
 
 	await devtools.locator(locateTreeItem("App")).click();

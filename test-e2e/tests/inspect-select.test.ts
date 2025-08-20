@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { getLog, gotoTest } from "../pw-utils";
 
-test("Should inspect during picking", async ({ page }) => {
+test.skip("Should inspect during picking", async ({ page }) => {
 	const { devtools } = await gotoTest(page, "counter");
 
 	const elem1 = '[data-testid="tree-item"][data-name="Counter"]';

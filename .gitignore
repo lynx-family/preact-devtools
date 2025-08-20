@@ -69,7 +69,7 @@ typings/
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 
-/dist/
+dist
 .rts*
 *.pdf
 test-e2e/screenshots
@@ -83,3 +83,4 @@ profiles/chrome/*
 .DS_Store
 
 test-results/
+lib

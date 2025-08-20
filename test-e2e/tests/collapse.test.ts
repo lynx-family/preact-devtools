@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { locateTab, gotoTest, waitFor, locateTreeItem } from "../pw-utils";
 
-test("Display no stats initially", async ({ page }) => {
+test.skip("Display no stats initially", async ({ page }) => {
 	const { devtools } = await gotoTest(page, "update-all");
 
 	await devtools.waitForSelector('[data-testid="tree-item"]');

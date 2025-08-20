@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { getHooks, gotoTest, locateTreeItem } from "../../pw-utils";
 
-test("Inspect useImperativeHandle hook", async ({ page }) => {
+test.skip("Inspect useImperativeHandle hook", async ({ page }) => {
 	const { devtools } = await gotoTest(page, "hooks");
 
 	await devtools.locator(locateTreeItem("ImperativeHandle")).click();

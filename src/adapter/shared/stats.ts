@@ -1,5 +1,5 @@
 import { DevNodeType } from "../../view/store/types";
-import { MsgTypes } from "../protocol/events";
+import { MsgTypes } from "../protocol/events-types";
 import { PreactBindings, SharedVNode } from "./bindings";
 import { getDevtoolsType, RendererConfig } from "./renderer";
 

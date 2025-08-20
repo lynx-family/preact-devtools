@@ -87,6 +87,11 @@ describe("Store", () => {
 			suspended: false,
 			type: 1,
 			version: "",
+			__source: {
+				fileName: "foo.tsx",
+				lineNumber: 12,
+				columnNumber: 10,
+			},
 		};
 		store.clear();
 		expect(store.inspectData.value).to.equal(null);

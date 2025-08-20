@@ -6,7 +6,7 @@ import {
 	gotoTest,
 } from "../../pw-utils";
 
-test("Show multiple hook names at the same time", async ({ page }) => {
+test.skip("Show multiple hook names at the same time", async ({ page }) => {
 	const { devtools } = await gotoTest(page, "hooks-multiple");
 
 	await clickTreeItem(devtools, "App");

@@ -1,5 +1,11 @@
 # Changelog
 
+## 5.0.1
+
+### Features (Lynx)
+
+- Add support for ReactLynx and Lynx Devtool
+
 ## 4.5.0
 
 ### Features

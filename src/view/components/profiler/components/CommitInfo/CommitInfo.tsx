@@ -24,7 +24,7 @@ export function CommitInfo() {
 				<dd class="commit-info-value">{formatTime(root.startTime)}</dd>
 				<br />
 				<dt class="commit-info-title">Duration:</dt>
-				<dd class="commit-info-value">{formatTime(commit.duration)} </dd>
+				<dd class="commit-info-value">{formatTime(commit.duration)}</dd>
 			</dl>
 		</SidebarPanel>
 	);

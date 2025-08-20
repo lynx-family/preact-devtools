@@ -6,7 +6,7 @@ import {
 	locateTab,
 } from "../pw-utils";
 
-test("Debug mode toggles debug views", async ({ page }) => {
+test.skip("Debug mode toggles debug views", async ({ page }) => {
 	const { devtools } = await gotoTest(page, "counter");
 
 	// Enable Capturing

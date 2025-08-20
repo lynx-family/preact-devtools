@@ -3,6 +3,7 @@ import { h } from "preact";
 import { useStore } from "../../store/react-bindings";
 import { DevNode } from "../../store/types";
 import { SidebarPanel } from "../sidebar/SidebarPanel";
+import { ClickToComponent } from "../sidebar/ClickToComponent";
 
 export function OwnerInfo() {
 	const store = useStore();
@@ -53,6 +54,7 @@ export function OwnerInfo() {
 				<p class="sidebar-preact-version">
 					Preact@{store.inspectData.value?.version || ""}
 				</p>
+				<ClickToComponent source={store.inspectData.value?.__source} />
 			</div>
 		</SidebarPanel>
 	);

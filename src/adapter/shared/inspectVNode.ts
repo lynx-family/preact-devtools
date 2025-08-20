@@ -86,6 +86,8 @@ export function inspectVNode<T extends SharedVNode>(
 		type: getDevtoolsType(vnode, bindings),
 		suspended,
 		version,
+		// @ts-ignore
+		__source: vnode.__source || null,
 	};
 }
 

@@ -75,7 +75,7 @@ export function setupOptionsV10(
 
 	// Make sure that we are always the first `option._hook` to be called.
 	// This is necessary to ensure that our callstack remains consistent.
-	// Othwerwise we'll end up with an unknown number of frames in-between
+	// Otherwise we'll end up with an unknown number of frames in-between
 	// the called hook and `options._hook`. This will lead to wrongly
 	// parsed hooks.
 	setTimeout(() => {
@@ -141,7 +141,7 @@ export function setupOptionsV10(
 		}
 
 		if (vnode.type !== null) {
-			timings.start.set(vnode, performance.now());
+			timings.start.set(vnode, preactDevtoolsCtx.performance.now());
 		}
 
 		if (prevBeforeDiff != null) prevBeforeDiff(vnode);
@@ -168,7 +168,7 @@ export function setupOptionsV10(
 		}
 
 		if (vnode.type !== null) {
-			timings.end.set(vnode, performance.now());
+			timings.end.set(vnode, preactDevtoolsCtx.performance.now());
 		}
 
 		if (prevAfterDiff) prevAfterDiff(vnode);
@@ -203,7 +203,7 @@ export function setupOptionsV10(
 			// Some islands based frameworks use a virtual container node
 			// instead of an actual DOM node.
 			const treeParent =
-				"Node" in globalThis && parent instanceof Node
+				"Node" in globalThis && parent instanceof preactDevtoolsCtx.Node
 					? parent
 					: (parent as any).parentNode;
 			userRootToContainer.set(vnode, treeParent);

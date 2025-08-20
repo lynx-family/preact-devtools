@@ -109,7 +109,8 @@ describe("FlameGraph DSL", () => {
 
 	it("should throw if names are not unique", () => {
 		expect(
-			() => flames`
+			() =>
+				flames`
       App ***
       App ***
     `,

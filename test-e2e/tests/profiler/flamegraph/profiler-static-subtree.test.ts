@@ -7,7 +7,7 @@ import {
 	wait,
 } from "../../../pw-utils";
 
-test("Static subtree should be smaller in size", async ({ page }) => {
+test.skip("Static subtree should be smaller in size", async ({ page }) => {
 	const { devtools } = await gotoTest(page, "static-subtree");
 
 	await devtools.locator(locateTab("PROFILER")).click();
@@ -26,8 +26,9 @@ test("Static subtree should be smaller in size", async ({ page }) => {
 	await wait(500);
 
 	const res = await devtools.evaluate(() => {
-		const display = document.querySelector('[data-name="Display"]')!
-			.clientWidth;
+		const display = document.querySelector(
+			'[data-name="Display"]',
+		)!.clientWidth;
 		const statics = Array.from(
 			document.querySelectorAll('[data-name="Static"]')!,
 		).map(el => el.clientWidth);

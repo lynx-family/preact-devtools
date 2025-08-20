@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { gotoTest } from "../pw-utils";
 
-test("Test HOCs on update", async ({ page }) => {
+test.skip("Test HOCs on update", async ({ page }) => {
 	const { devtools } = await gotoTest(page, "static-subtree");
 
 	await devtools

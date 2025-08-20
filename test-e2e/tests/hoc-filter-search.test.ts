@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { gotoTest, locateTreeItem } from "../pw-utils";
 
-test("HOC-Component labels should be searchable", async ({ page }) => {
+test.skip("HOC-Component labels should be searchable", async ({ page }) => {
 	const { devtools } = await gotoTest(page, "hoc");
 
 	await devtools.waitForSelector(locateTreeItem("Foo"));

@@ -1,6 +1,6 @@
 import { ID, Tree } from "../../view/store/types";
 import { parseTable } from "./string-table";
-import { MsgTypes } from "./events";
+import { MsgTypes } from "./events-types";
 import { deepClone } from "../shared/utils";
 import { RenderReasonMap } from "../shared/renderReasons";
 import { ParsedStats, parseStats } from "../shared/stats";

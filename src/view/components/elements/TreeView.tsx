@@ -109,9 +109,9 @@ export function TreeView() {
 						</p>
 						<p class="tree-view-empty-descr">
 							<small>
-								If this message doesn&apos;t go away Preact started rendering
-								before devtools was initialized. You can fix this by adding the{" "}
-								<code>preact/debug</code> or <code>preact/devtools</code> import
+								If this message doesn&apos;t go away, your ReactLynx App is not
+								setup with devtools. You can fix this by adding the{" "}
+								<code>import &apos;@lynx-js/preact-devtools&apos;</code> import
 								at the <b>top</b> of your entry file.
 							</small>
 						</p>

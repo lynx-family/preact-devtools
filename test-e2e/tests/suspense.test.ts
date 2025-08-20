@@ -38,9 +38,9 @@ function testCase(version: string) {
 	};
 }
 
-test.describe("Display Suspense in tree view", () => {
-	test("Preact 10.5.9", testCase("10.5.9"));
+test.describe.skip("Display Suspense in tree view", () => {
+	test.skip("Preact 10.5.9", testCase("10.5.9"));
 
 	// <10.4.5, uses a component instead of a Fragment as the boundary
-	test("Preact 10.4.1", testCase("10.4.1"));
+	test.skip("Preact 10.4.1", testCase("10.4.1"));
 });

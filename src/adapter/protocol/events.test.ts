@@ -234,6 +234,11 @@ describe("applyEvent", () => {
 			canSuspend: false,
 			suspended: false,
 			version: "",
+			__source: {
+				fileName: "foo.tsx",
+				lineNumber: 12,
+				columnNumber: 10,
+			},
 		};
 
 		const data = fromSnapshot([
@@ -263,6 +268,11 @@ describe("applyEvent", () => {
 			canSuspend: false,
 			suspended: false,
 			version: "",
+			__source: {
+				fileName: "foo.tsx",
+				lineNumber: 12,
+				columnNumber: 10,
+			},
 		};
 
 		store.sidebar.props.uncollapsed.value = ["a", "b", "c"];

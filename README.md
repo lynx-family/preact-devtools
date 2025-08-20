@@ -1,64 +1,28 @@
-# Preact Devtools
+# Preact Devtools for ReactLynx
 
-Browser extension that allows you to inspect a Preact component hierarchy,
-including props and state.
-
-**Requires Preact >=10.1.0**
-
-![Screenshot of Preact devtools](media/preact-chrome-light.png)
+The [Lynx Devtool](https://github.com/lynx-family/lynx-devtool) Panel that allows you to inspect a ReactLynx component hierarchy, including props and state.
 
 ## Usage
 
-Firstly, we need to import `preact/debug` somewhere to initialize the connection
-to the extension. Make sure that this import is **the first** import in your
+We need to import `@lynx-js/preact-devtools` somewhere to initialize the connection
+to Preact Devtools Panel. Make sure that this import is **the first** import in your
 whole app.
 
-```javascript
-// Must be the first import
-import "preact/debug";
-
-// Or if you just want the devtools bridge (~240B) without other
-// debug code (useful for production sites)
-import "preact/devtools";
+```bash
+import '@lynx-js/preact-devtools'
 ```
 
-Then, download the Preact Devtools extension for your browser:
-
-- [Firefox](https://addons.mozilla.org/en-US/firefox/addon/preact-devtools/)
-- [Chrome](https://chrome.google.com/webstore/detail/preact-developer-tools/ilcajpmogmhpliinlbcdebhbcanbghmd)
-- [Edge](https://microsoftedge.microsoft.com/addons/detail/hdkhobcafnfejjieimdkmjaiihkjpmhk)
+See the documentation of [Preact Devtools Panel in Lynx Devtool](https://lynxjs.org/guide/devtool/panels/preact-devtools-panel.html#preact-devtools-panel) for more information.
 
 ## Contributing
 
-- Use `npm run dev` to start a demo page
-- Use `npm run watch` to rebuild all extensions on any code changes
-- Use `npm run build:firefox` or `npm run build:chrome` to create a release build
+- [`ldt-plugin`](./ldt-plugin/) contains the source code of Preact Devtools Panel in Lynx Devtool. Run it by `npm run dev:ldt-plugin` when developing, and `npm run build:ldt-plugin` to build it.
+- [`src`](./src/) contains the source code for ReactLynx App to setup Preact Devtools related hooks. You can build it just by `npm run build:lib` in the root folder of this repository.
 
-Chrome:
+The ReactLynx App will communicate with the Preact Devtools Panel in Lynx Devtool using CDP messages.
 
-1. Go to extensions page
-2. Enable developer mode
-3. Click "Load unpacked"
-4. Select `dist/chrome/` folder
+## Credits
 
-Firefox:
+Thanks to:
 
-1. Go to addons page
-2. Click the settings icon
-3. Select "Debug addons"
-4. Click "Load temporary addon"
-5. Select the `manifest.json` in `dist/firefox/`
-
-## For extension reviewers
-
-These commands will build the extension and load it into a browser with a temporary profile. The browser will automatically navigate to [preactjs.com](https://preactjs.com). There you can test the extension.
-
-Chrome:
-
-1. Execute `npm run run:chrome`
-2. Click on `Preact` tab in devtools
-
-Firefox:
-
-1. Exectue `npm run run:firefox`
-2. Open devtools + click on `Preact` tab in devtools
+- [Preact Devtools](https://github.com/preactjs/preact-devtools) for the original Devtools implementation for Preact.

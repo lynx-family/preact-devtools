@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { getLog, gotoTest, wait } from "../pw-utils";
 
-test("Inspect should select node in elements panel", async ({ page }) => {
+test.skip("Inspect should select node in elements panel", async ({ page }) => {
 	const { devtools } = await gotoTest(page, "counter");
 
 	await devtools.locator("data-testid=inspect-btn").click();

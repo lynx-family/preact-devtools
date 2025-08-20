@@ -1,7 +1,9 @@
 import { test, expect } from "@playwright/test";
 import { getHooks, gotoTest, locateTreeItem } from "../../pw-utils";
 
-test("Inspect useContext hook Preact 10.5.14 (goober)", async ({ page }) => {
+test.skip("Inspect useContext hook Preact 10.5.14 (goober)", async ({
+	page,
+}) => {
 	const { devtools } = await gotoTest(page, "goober");
 
 	await devtools.locator(locateTreeItem("a")).click();

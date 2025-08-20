@@ -65,6 +65,9 @@ export interface DevtoolEvents {
 	"root-order": number[];
 	operation: number[];
 	operation_v2: number[];
+	"preact-devtools-highlight": { snapshotId: number; uniqueId: number };
+	"element-picked": { uniqueId: number };
+	"element-picked-vnode-id": { id: number };
 }
 export type EmitFn = <K extends keyof DevtoolEvents>(
 	name: K,
@@ -95,6 +98,8 @@ export interface DevtoolsHook {
  * is the entrypoint where everything begins.
  */
 export function createHook(port: PortPageHook): DevtoolsHook {
+	const window = preactDevtoolsCtx;
+
 	const { listen, send } = port;
 	const renderers = new Map<number, Renderer>();
 	let uid = 0;
@@ -154,11 +159,17 @@ export function createHook(port: PortPageHook): DevtoolsHook {
 	};
 
 	// Delete all roots when the current frame is closed
-	window.addEventListener("pagehide", () => {
-		renderers.forEach(r => {
-			if (r.clear) r.clear();
-		});
-	});
+	// @ts-ignore
+	const tt = lynxCoreInject.tt;
+	if (tt.callDestroyLifetimeFun) {
+		const oldCallDestroyLifetimeFun = tt.callDestroyLifetimeFun;
+		tt.callDestroyLifetimeFun = () => {
+			oldCallDestroyLifetimeFun();
+			renderers.forEach(r => {
+				if (r.clear) r.clear();
+			});
+		};
+	}
 
 	// TODO: This should be added to codesandbox itself. I'm not too
 	// happy with having site specific code in the extension, but
@@ -228,6 +239,23 @@ export function createHook(port: PortPageHook): DevtoolsHook {
 				const idMapper = createIdMappingState(
 					namespace,
 					bindingsV10.getInstance,
+				);
+				lynx
+					.getJSModule("GlobalEventEmitter")
+					.removeAllListeners("onBackgroundSnapshotInstanceUpdateId");
+				lynx.getJSModule("GlobalEventEmitter").addListener(
+					"onBackgroundSnapshotInstanceUpdateId",
+					// @ts-expect-error
+					({
+						oldId,
+						newId,
+					}: {
+						backgroundSnapshotInstance: any;
+						oldId: number;
+						newId: number;
+					}) => {
+						idMapper.updateSnapshotId(oldId, newId);
+					},
 				);
 
 				const renderer = createRenderer(

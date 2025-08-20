@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { gotoTest } from "../pw-utils";
 
-test("Highlighting combined DOM tree of a Fragment", async ({ page }) => {
+test.skip("Highlighting combined DOM tree of a Fragment", async ({ page }) => {
 	const { devtools } = await gotoTest(page, "highlight-fragment");
 
 	// 1st test

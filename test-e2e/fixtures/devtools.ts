@@ -2,7 +2,7 @@ import { setupInlineDevtools } from "../../src/shells/inline/index";
 
 const container = document.getElementById("app")!;
 
-const store = setupInlineDevtools(container, window);
+const store = setupInlineDevtools(container, window.preactDevtoolsLDTCtx);
 
 // @ts-ignore
 window.parent.store = store;

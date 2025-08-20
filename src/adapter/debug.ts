@@ -1,4 +1,4 @@
-import { MsgTypes } from "./protocol/events";
+import { MsgTypes } from "./protocol/events-types";
 import { parseTable, flushTable } from "./protocol/string-table";
 import { ID, DevNodeType } from "../view/store/types";
 import { renderReasonToStr } from "./shared/renderReasons";

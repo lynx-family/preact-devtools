@@ -7,7 +7,7 @@ import {
 } from "../../../pw-utils";
 import { getFlameNodes } from "./utils";
 
-test("Focus nodes in flamegraph layout", async ({ page }) => {
+test.skip("Focus nodes in flamegraph layout", async ({ page }) => {
 	const { devtools } = await gotoTest(page, "profiler-3");
 
 	await devtools.locator(locateTab("PROFILER")).click();

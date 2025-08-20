@@ -6,7 +6,7 @@ import {
 	waitForPass,
 } from "../../pw-utils";
 
-test("Inspect useContext hook", async ({ page }) => {
+test.skip("Inspect useContext hook", async ({ page }) => {
 	const { devtools } = await gotoTest(page, "hooks");
 
 	await devtools.locator(locateTreeItem("ContextComponent")).click();

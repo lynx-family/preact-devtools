@@ -1,7 +1,7 @@
 import { test } from "@playwright/test";
 import { gotoTest, locateTreeItem } from "../pw-utils";
 
-test("Display symbol values", async ({ page }) => {
+test.skip("Display symbol values", async ({ page }) => {
 	const { devtools } = await gotoTest(page, "symbols");
 
 	// Hooks

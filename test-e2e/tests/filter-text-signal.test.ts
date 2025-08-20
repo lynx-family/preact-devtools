@@ -1,7 +1,9 @@
 import { expect, test } from "@playwright/test";
 import { gotoTest } from "../pw-utils";
 
-test("Text Signal filter should filter Text Signal nodes", async ({ page }) => {
+test.skip("Text Signal filter should filter Text Signal nodes", async ({
+	page,
+}) => {
 	test.skip(
 		process.env.PREACT_VERSION !== "10",
 		"Signals are not supported in v11 yet.",

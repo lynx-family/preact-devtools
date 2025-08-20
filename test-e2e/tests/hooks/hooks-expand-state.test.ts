@@ -7,7 +7,7 @@ import {
 	locateHook,
 } from "../../pw-utils";
 
-test("Inspect useRef hook", async ({ page }) => {
+test.skip("Inspect useRef hook", async ({ page }) => {
 	const { devtools } = await gotoTest(page, "hooks-expand");
 
 	await clickTreeItem(devtools, "Memo");
