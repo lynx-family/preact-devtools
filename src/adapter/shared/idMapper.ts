@@ -123,8 +123,9 @@ export function updateVNodeId<T>(state: IdMappingState<T>, id: ID, vnode: T) {
 		// @ts-ignore
 		snapshotId = vnode.__e.__id;
 	} catch (e) {
-		// It is as expected when destroying
-		// console.log('updateVNodeId vnode', vnode)
+		// When a component returns null/Fragment
+		// it will has no `__e` property, so it has
+		// no related snapshotInstance.
 		return;
 	}
 	state.snapshotIdToId.set(snapshotId, id);
@@ -143,8 +144,9 @@ export function removeVNodeId<T>(state: IdMappingState<T>, vnode: T) {
 			// @ts-ignore
 			snapshotId = vnode.__e.__id;
 		} catch (e) {
-			// It is as expected when destroying
-			// console.log('updateVNodeId vnode', vnode)
+			// When a component returns null/Fragment
+			// it will has no `__e` property, so it has
+			// no related snapshotInstance.
 			return;
 		}
 		state.snapshotIdToId.delete(snapshotId);
@@ -173,9 +175,10 @@ export function createVNodeId<T>(state: IdMappingState<T>, vnode: T) {
 		// @ts-ignore
 		snapshotId = vnode.__e.__id;
 	} catch (e) {
-		// It is as expected when destroying
-		// console.log('createVNodeId vnode', vnode)
-		return;
+		// When a component returns null/Fragment
+		// it will has no `__e` property, so it has
+		// no related snapshotInstance.
+		return id;
 	}
 	state.snapshotIdToId.set(snapshotId, id);
 

@@ -8,6 +8,11 @@ export default defineConfig({
 	//   filenameHash: 'contenthash:8',
 	//   minify: false,
 	// },
+	source: {
+		define: {
+			"globalThis.preactDevtoolsCtx.__DEBUG__": "true",
+		},
+	},
 	plugins: [
 		pluginQRCode({
 			schema(url) {
