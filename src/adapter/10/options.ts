@@ -208,8 +208,18 @@ export function setupOptionsV10(
 		} else {
 			// Some islands based frameworks use a virtual container node
 			// instead of an actual DOM node.
+			//
+			// On a browser host `preactDevtoolsCtx.Node === window.Node`. On
+			// ReactLynx, `setup.ts` shims `preactDevtoolsCtx.Node` with the
+			// `BackgroundSnapshotInstance` constructor (`__root.__proto__.constructor`)
+			// so the shim is always defined when this hook fires. Guarding on
+			// `"Node" in globalThis` would always be false in the ReactLynx
+			// Background VM, forcing the islands fallback below and producing
+			// `treeParent = parent.parentNode === null` for the top-level
+			// `__root`. That kept `roots` empty and broke `refresh` /
+			// `getRootMappings`. Compare against the shim instead.
 			const treeParent =
-				"Node" in globalThis && parent instanceof preactDevtoolsCtx.Node
+				preactDevtoolsCtx.Node && parent instanceof preactDevtoolsCtx.Node
 					? parent
 					: (parent as any).parentNode;
 			userRootToContainer.set(vnode, treeParent);
