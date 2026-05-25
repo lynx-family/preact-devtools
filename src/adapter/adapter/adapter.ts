@@ -163,7 +163,11 @@ export function createAdapter(
 			roots = roots.concat(m);
 		});
 
-		const sorted = sortRoots(document.body, roots);
+		// `window === preactDevtoolsCtx`, see top of `createAdapter`. The
+		// ReactLynx host shims `document.body` with the background root
+		// snapshot (see `react-lynx/setup.ts`), which is structurally
+		// compatible with the small subset of `Node` used by `sortRoots`.
+		const sorted = sortRoots(window.document.body as unknown as Node, roots);
 		send("root-order", sorted);
 	});
 
