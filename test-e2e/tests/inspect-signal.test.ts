@@ -10,13 +10,12 @@ test.skip("Show signal in props and update value", async ({ page }) => {
 
 	await devtools.locator(locateTreeItem("Display")).first().click();
 
-	await devtools.waitForSelector('[data-testid="props-row"]');
+	await devtools.locator('[data-testid="props-row"]').first().waitFor();
 
-	let preview = await devtools
-		.locator('[data-testid="prop-value"]:has-text("Signal")')
-		.textContent();
-
-	expect(preview).toEqual("ƒ Signal (0)");
+	const preview = devtools.locator(
+		'[data-testid="prop-value"]:has-text("Signal")',
+	);
+	await expect(preview).toHaveText("ƒ Signal (0)");
 
 	await devtools.locator('[data-type="signal"]').click();
 	await devtools.locator('input[name="root.value.value"]').focus();
@@ -25,25 +24,19 @@ test.skip("Show signal in props and update value", async ({ page }) => {
 
 	await page.locator("#result:has-text('value: 1,double: 2')").waitFor();
 
-	preview = await devtools
-		.locator('[data-testid="prop-value"]:has-text("Signal")')
-		.textContent();
-
-	expect(preview).toEqual("ƒ Signal (1)");
+	await expect(preview).toHaveText("ƒ Signal (1)");
 });
 
 test.skip("Show computed signal as readonly", async ({ page }) => {
 	const { devtools } = await gotoTest(page, "signals");
 
-	await devtools.click(locateTreeItem("Display") + ":nth-child(2n)");
+	await devtools.locator(locateTreeItem("Display") + ":nth-child(2n)").click();
 
-	await devtools.waitForSelector('[data-testid="props-row"]');
+	await devtools.locator('[data-testid="props-row"]').first().waitFor();
 
-	const preview = await devtools
-		.locator('[data-testid="prop-value"]:has-text("Signal")')
-		.textContent();
-
-	expect(preview).toEqual("ƒ computed Signal (0)");
+	await expect(
+		devtools.locator('[data-testid="prop-value"]:has-text("Signal")'),
+	).toHaveText("ƒ computed Signal (0)");
 
 	await devtools.locator('[data-type="signal"]').click();
 
@@ -57,6 +50,7 @@ test.skip("Show computed signal as readonly", async ({ page }) => {
 test.skip("Show signals in hooks", async ({ page }) => {
 	const { devtools } = await gotoTest(page, "signals");
 
+	await page.locator("button:has-text('force update')").click();
 	await devtools.click(locateTreeItem("Counter"));
 
 	await devtools.waitForSelector('[data-testid="props-row"]');
@@ -114,6 +108,7 @@ test.skip("Don't crash when signal hook is updated", async ({ page }) => {
 	);
 	const { devtools } = await gotoTest(page, "signals");
 
+	await page.locator("button:has-text('force update')").click();
 	await devtools.click(locateTreeItem("Counter"));
 	await devtools.waitForSelector('[data-testid="props-row"]');
 

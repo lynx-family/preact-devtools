@@ -1,3 +1,6 @@
+# Local tooling
+.claude/
+
 # Logs
 logs
 *.log
@@ -49,9 +52,6 @@ typings/
 
 # Optional npm cache directory
 .npm
-
-# Optional eslint cache
-.eslintcache
 
 # Optional REPL history
 .node_repl_history

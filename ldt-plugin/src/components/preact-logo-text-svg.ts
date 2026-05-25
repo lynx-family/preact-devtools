@@ -42,14 +42,17 @@ export const PreactLogoTextSvg: React.FC = () => {
 			r: "34",
 			fill: "white",
 		}),
-		React.createElement("text", {
-			x: "250",
-			y: "128",
-			fontSize: "350",
-			fontFamily: "Helvetica Neue, helvetica, arial",
-			fontWeight: "300",
-			fill: "#673ab8",
-			children: "PREACT",
-		}),
+		React.createElement(
+			"text",
+			{
+				x: "250",
+				y: "128",
+				fontSize: "350",
+				fontFamily: "Helvetica Neue, helvetica, arial",
+				fontWeight: "300",
+				fill: "#673ab8",
+			},
+			"PREACT",
+		),
 	);
 };
