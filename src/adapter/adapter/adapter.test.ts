@@ -1,4 +1,4 @@
-import { expect } from "chai";
+import { expect } from "vitest";
 import { createAdapter } from "./adapter";
 import { newProfiler } from "./profiler";
 import { PortPageHook } from "./port";

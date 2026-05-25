@@ -6,11 +6,10 @@ test.skip("Don't trigger events on click during inspection", async ({
 }) => {
 	const { devtools } = await gotoTest(page, "counter");
 
-	let txt = await page.locator('[data-testid="result"]').textContent();
+	await expect(page.locator('[data-testid="result"]')).toHaveText("Counter: 0");
 
 	await devtools.locator('[data-testid="inspect-btn"]').click();
 	await page.locator("button").click();
 
-	txt = await page.locator('[data-testid="result"]').textContent();
-	expect(txt).toEqual("Counter: 0");
+	await expect(page.locator('[data-testid="result"]')).toHaveText("Counter: 0");
 });

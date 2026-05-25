@@ -1,4 +1,4 @@
-import { expect } from "chai";
+import { expect } from "vitest";
 import { cleanContext, cleanProps, jsonify } from "./serialize";
 import { h, Component, createContext, render } from "preact";
 import { teardown } from "preact/test-utils";
@@ -43,6 +43,13 @@ describe("jsonify", () => {
 				type: "bigint",
 				value: "3",
 			},
+		});
+	});
+
+	it("should truncate long strings", () => {
+		const data = { foo: "start" + "foo".repeat(200) } as const;
+		expect(jsonify(data, () => null, new Set())).to.deep.equal({
+			foo: ("start" + "foo".repeat(100)).slice(0, 300),
 		});
 	});
 });

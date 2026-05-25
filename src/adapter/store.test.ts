@@ -1,8 +1,7 @@
 import { createStore } from "../view/store";
 import { applyOperationsV2 } from "./protocol/events";
-import { expect } from "chai";
+import { expect, vi } from "vitest";
 import { fromSnapshot } from "./debug";
-import * as sinon from "sinon";
 import { effect } from "@preact/signals";
 
 describe("Store", () => {
@@ -54,9 +53,9 @@ describe("Store", () => {
 		]);
 		applyOperationsV2(store, event);
 
-		const spy = sinon.spy();
+		const spy = vi.fn();
 		effect(() => spy(store.nodeList.value));
-		spy.resetHistory();
+		spy.mockClear();
 
 		// prettier-ignore
 		const event2 = fromSnapshot([
@@ -66,7 +65,7 @@ describe("Store", () => {
     ]);
 		applyOperationsV2(store, event2);
 
-		expect(spy.callCount).to.eq(2); // TODO: Should be called once
+		expect(spy).toHaveBeenCalledTimes(2); // TODO: Should be called once
 		expect(store.nodes.value.get(1)!.children).to.deep.equal([]);
 		expect(store.nodes.value.get(2)).to.equal(undefined);
 		expect(store.nodes.value.get(3)).to.equal(undefined);
@@ -95,5 +94,57 @@ describe("Store", () => {
 		};
 		store.clear();
 		expect(store.inspectData.value).to.equal(null);
+	});
+
+	it("should only parse hooks when hooks are supported", () => {
+		const store = createStore();
+		const hooks = [
+			{
+				id: "root",
+				name: "root",
+				type: "object" as const,
+				value: null,
+				editable: false,
+				depth: 0,
+				meta: null,
+				children: ["root.0"],
+			},
+			{
+				id: "root.0",
+				name: "State",
+				type: "number" as const,
+				value: 1,
+				editable: true,
+				depth: 1,
+				meta: null,
+				children: [],
+			},
+		];
+
+		store.inspectData.value = {
+			canSuspend: false,
+			context: null,
+			hooks,
+			id: 123,
+			key: null,
+			name: "Foo",
+			props: null,
+			state: null,
+			signals: null,
+			suspended: false,
+			type: 1,
+			version: "",
+			__source: {
+				fileName: "foo.tsx",
+				lineNumber: 12,
+				columnNumber: 10,
+			},
+		};
+
+		expect(store.sidebar.hooks.items.value).to.deep.equal([]);
+
+		store.supports.hooks.value = true;
+
+		expect(store.sidebar.hooks.items.value).to.deep.equal([hooks[1]]);
 	});
 });

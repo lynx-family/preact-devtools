@@ -1,4 +1,4 @@
-import { expect } from "chai";
+import { expect } from "vitest";
 import { fromSnapshot, toStringTable } from "./debug";
 import { MsgTypes } from "./protocol/events-types";
 import { DevNodeType } from "../view/store/types";
