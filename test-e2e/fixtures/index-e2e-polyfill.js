@@ -1,4 +1,3 @@
-window.preactDevtoolsCtx = window;
 window.lynxCoreInject = {
 	tt: {},
 };
@@ -15,3 +14,4 @@ window.lynx = {
 		};
 	},
 };
+window.lynx.preactDevtoolsCtx = window;
