@@ -1,0 +1,38 @@
+name: Publish preview to pkg.pr.new
+
+# Publishes a preview of the package to https://pkg.pr.new for every PR and for
+# every commit on `main`, so changes can be installed with
+# `npm i https://pkg.pr.new/@lynx-js/preact-devtools@<pr-number|sha>` before they
+# are released to npm.
+#
+# Requires the pkg.pr.new GitHub App to be installed on this repository:
+# https://github.com/apps/pkg-pr-new — no npm token is needed, the app handles
+# authentication and posts the install instructions as a PR comment.
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Deps
+        run: npm i
+      - name: Build package
+        # Same build the real npm publish runs (package.json `prepublishOnly`),
+        # producing the `lib/` output that gets packed.
+        run: npm run build:lynx
+      - name: Publish to pkg.pr.new
+        run: npx pkg-pr-new publish
