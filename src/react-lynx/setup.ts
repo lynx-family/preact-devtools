@@ -4,8 +4,20 @@ import { __root, __page } from "@lynx-js/react/internal";
 export function setupReactLynx() {
 	if (__BACKGROUND__) {
 		try {
+			// Transport to the devtools panel:
+			// - native Lynx: the LDT CDP channel exposed via `lynx.getDevtool()`.
+			// - web platform (e.g. a web simulator): there is no `getDevtool`, but
+			//   the background worker shares a BroadcastChannel origin with the
+			//   hosting page, where a small bridge can relay messages to the
+			//   Preact Devtools browser extension (see README).
 			// @ts-ignore
-			if (typeof lynx.getDevtool !== "function") {
+			const hasNativeDevtool = typeof lynx.getDevtool === "function";
+			const WebChannel = (globalThis as any).BroadcastChannel;
+			const webChannel =
+				!hasNativeDevtool && typeof WebChannel === "function"
+					? new WebChannel("preact-devtools")
+					: null;
+			if (!hasNativeDevtool && !webChannel) {
 				throw new Error(
 					"`lynx.getDevtool` is not a function. Please upgrade your LynxSDK to the latest version.",
 				);
@@ -59,28 +71,30 @@ export function setupReactLynx() {
 
 				if (__DEBUG__) {
 					// App -> Devtools
-					console.log("lynx.getDevtool().dispatchEvent", {
+					console.log("devtools transport send", {
 						source,
 						type,
 						data,
 					});
 				}
-				// @ts-ignore
-				lynx.getDevtool().dispatchEvent({
-					type: "PreactDevtools",
-					data: JSON.stringify({
-						source,
-						type,
-						data,
-					}),
-				});
+				if (hasNativeDevtool) {
+					// @ts-ignore
+					lynx.getDevtool().dispatchEvent({
+						type: "PreactDevtools",
+						data: JSON.stringify({
+							source,
+							type,
+							data,
+						}),
+					});
+				} else {
+					webChannel.postMessage({ source, type, data });
+				}
 			};
 
-			// @ts-ignore
-			lynx.getDevtool().addEventListener("PreactDevtools", e => {
-				const dataObj = JSON.parse(e.data);
+			const deliver = (dataObj: { source: any; type: any; data: any }) => {
 				if (__DEBUG__) {
-					console.log("hdt -> frontend message received", dataObj);
+					console.log("devtools -> frontend message received", dataObj);
 				}
 				const { source, type, data } = dataObj;
 
@@ -94,7 +108,15 @@ export function setupReactLynx() {
 						},
 					});
 				}
-			});
+			};
+			if (hasNativeDevtool) {
+				// @ts-ignore
+				lynx.getDevtool().addEventListener("PreactDevtools", e => {
+					deliver(JSON.parse(e.data));
+				});
+			} else {
+				webChannel.onmessage = (e: { data: any }) => deliver(e.data);
+			}
 
 			if (
 				typeof lynx.preactDevtoolsCtx.localStorage === "undefined" ||
@@ -270,10 +292,21 @@ export function setupReactLynx() {
 				};
 			}
 
-			require("../shells/shared/installHook");
-			require("preact/devtools");
-
-			console.log("[PREACT DEVTOOLS] Devtools initialized successfully");
+			// On the web platform these become async modules (they transitively
+			// import async externals such as `preact`), so a CJS require()
+			// returns a Promise of the namespace. Chain them to keep the
+			// required order: the hook must be installed before
+			// `preact/devtools` connects to it. On native Lynx both requires
+			// stay synchronous and only the success log becomes a microtask.
+			Promise.resolve(require("../shells/shared/installHook"))
+				.then(() => Promise.resolve(require("preact/devtools")))
+				.then(() => {
+					console.log("[PREACT DEVTOOLS] Devtools initialized successfully");
+				})
+				.catch(e => {
+					console.warn("[PREACT DEVTOOLS] Devtools failed to initialize:");
+					console.warn(e);
+				});
 		} catch (e) {
 			console.warn("[PREACT DEVTOOLS] Devtools failed to initialize:");
 			console.warn(e);
