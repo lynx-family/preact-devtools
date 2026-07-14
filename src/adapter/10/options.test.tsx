@@ -9,26 +9,26 @@ import { createIdMappingState } from "../shared/idMapper";
 describe("setupOptionsV10", () => {
 	describe("_root hook (root container detection)", () => {
 		// Regression test for the ReactLynx host where `globalThis.Node` is
-		// undefined but `preactDevtoolsCtx.Node` is shimmed with the
+		// undefined but `lynx.preactDevtoolsCtx.Node` is shimmed with the
 		// `BackgroundSnapshotInstance` constructor (`react-lynx/setup.ts`).
 		// The `__root` snapshot has no `parentNode`, so the old guard
-		// `"Node" in globalThis && parent instanceof preactDevtoolsCtx.Node`
+		// `"Node" in globalThis && parent instanceof lynx.preactDevtoolsCtx.Node`
 		// fell through to `parent.parentNode`, set `userRootToContainer`
 		// to `null`, and `_commit` skipped `roots.set(vnode, dom)`. That
 		// left `getRootMappings()` permanently empty -- breaking
 		// `refresh` / `applyFilters` / `root-order-page` even after the
 		// `document.body` shim landed.
-		it("treats a preactDevtoolsCtx.Node container as the root container, even with no globalThis.Node and no parentNode", () => {
+		it("treats a lynx.preactDevtoolsCtx.Node container as the root container, even with no globalThis.Node and no parentNode", () => {
 			const hadGlobalNode = Object.prototype.hasOwnProperty.call(
 				globalThis,
 				"Node",
 			);
 			const originalGlobalNode = (globalThis as any).Node;
 			const hadCtxNode = Object.prototype.hasOwnProperty.call(
-				preactDevtoolsCtx,
+				lynx.preactDevtoolsCtx,
 				"Node",
 			);
-			const originalCtxNode = preactDevtoolsCtx.Node;
+			const originalCtxNode = lynx.preactDevtoolsCtx.Node;
 
 			// Reproduce the ReactLynx Background VM environment:
 			// `globalThis.Node` is missing and the application root has no
@@ -58,7 +58,7 @@ describe("setupOptionsV10", () => {
 				}
 			}
 
-			preactDevtoolsCtx.Node = FakeBackgroundSnapshotInstance as any;
+			lynx.preactDevtoolsCtx.Node = FakeBackgroundSnapshotInstance as any;
 			delete (globalThis as any).Node;
 
 			try {
@@ -162,9 +162,9 @@ describe("setupOptionsV10", () => {
 					delete (globalThis as any).Node;
 				}
 				if (hadCtxNode) {
-					preactDevtoolsCtx.Node = originalCtxNode;
+					lynx.preactDevtoolsCtx.Node = originalCtxNode;
 				} else {
-					delete (preactDevtoolsCtx as any).Node;
+					delete (lynx.preactDevtoolsCtx as any).Node;
 				}
 			}
 		});

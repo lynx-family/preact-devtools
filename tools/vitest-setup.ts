@@ -14,17 +14,16 @@ import { options } from "preact";
 // reassign e.g. `preactDevtoolsCtx.document`), and explicitly pull over the
 // non-enumerable `Node` constructor used by `parent instanceof
 // preactDevtoolsCtx.Node` in options.ts.
-(globalThis as any).preactDevtoolsCtx = {
-	...globalThis,
-	Node: (globalThis as any).Node,
-	performance,
-	Blob,
-};
-
 (globalThis as any).lynx = {
 	getNativeApp: () => {
 		return {
 			callLepusMethod: () => {},
 		};
+	},
+	preactDevtoolsCtx: {
+		...globalThis,
+		Node: (globalThis as any).Node,
+		performance,
+		Blob,
 	},
 };

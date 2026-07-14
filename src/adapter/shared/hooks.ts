@@ -197,7 +197,7 @@ export function parseHookData<T extends SharedVNode>(
 					// separately and append it as children to our hook node
 					if (
 						typeof rawValue === "object" &&
-						!(rawValue instanceof preactDevtoolsCtx.Node)
+						!(rawValue instanceof lynx.preactDevtoolsCtx.Node)
 					) {
 						const valueTree = parseProps(value, id, 8, 1, name);
 						children = valueTree.get(id)!.children;

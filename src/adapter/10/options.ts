@@ -142,7 +142,7 @@ export function setupOptionsV10(
 		}
 
 		if (vnode.type !== null) {
-			timings.start.set(vnode, preactDevtoolsCtx.performance.now());
+			timings.start.set(vnode, lynx.preactDevtoolsCtx.performance.now());
 		}
 
 		if (prevBeforeDiff != null) prevBeforeDiff(vnode);
@@ -174,7 +174,7 @@ export function setupOptionsV10(
 		}
 
 		if (vnode.type !== null) {
-			timings.end.set(vnode, preactDevtoolsCtx.performance.now());
+			timings.end.set(vnode, lynx.preactDevtoolsCtx.performance.now());
 		}
 
 		if (prevAfterDiff) prevAfterDiff(vnode);
@@ -209,8 +209,8 @@ export function setupOptionsV10(
 			// Some islands based frameworks use a virtual container node
 			// instead of an actual DOM node.
 			//
-			// On a browser host `preactDevtoolsCtx.Node === window.Node`. On
-			// ReactLynx, `setup.ts` shims `preactDevtoolsCtx.Node` with the
+			// On a browser host `lynx.preactDevtoolsCtx.Node === window.Node`. On
+			// ReactLynx, `setup.ts` shims `lynx.preactDevtoolsCtx.Node` with the
 			// `BackgroundSnapshotInstance` constructor (`__root.__proto__.constructor`)
 			// so the shim is always defined when this hook fires. Guarding on
 			// `"Node" in globalThis` would always be false in the ReactLynx
@@ -219,7 +219,8 @@ export function setupOptionsV10(
 			// `__root`. That kept `roots` empty and broke `refresh` /
 			// `getRootMappings`. Compare against the shim instead.
 			const treeParent =
-				preactDevtoolsCtx.Node && parent instanceof preactDevtoolsCtx.Node
+				lynx.preactDevtoolsCtx.Node &&
+				parent instanceof lynx.preactDevtoolsCtx.Node
 					? parent
 					: (parent as any).parentNode;
 			userRootToContainer.set(vnode, treeParent);

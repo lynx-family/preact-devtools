@@ -102,7 +102,7 @@ export function jsonify(
 		}
 		case "object": {
 			if (data === null) return null;
-			else if (data instanceof preactDevtoolsCtx.Blob) {
+			else if (data instanceof lynx.preactDevtoolsCtx.Blob) {
 				return {
 					type: "blob",
 					name: "Blob",
