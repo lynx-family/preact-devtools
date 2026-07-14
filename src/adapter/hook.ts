@@ -98,7 +98,7 @@ export interface DevtoolsHook {
  * is the entrypoint where everything begins.
  */
 export function createHook(port: PortPageHook): DevtoolsHook {
-	const window = preactDevtoolsCtx;
+	const window = lynx.preactDevtoolsCtx;
 
 	const { listen, send } = port;
 	const renderers = new Map<number, Renderer>();

@@ -84,9 +84,9 @@ function makeRenderer(rootMappings: RootData[]): Renderer {
 
 describe("createAdapter", () => {
 	describe("root-order-page", () => {
-		it("reads document.body from preactDevtoolsCtx, not the global scope", () => {
+		it("reads document.body from lynx.preactDevtoolsCtx, not the global scope", () => {
 			// Regression test for the ReactLynx host where `globalThis.document`
-			// is undefined. The adapter aliases `window = preactDevtoolsCtx`
+			// is undefined. The adapter aliases `window = lynx.preactDevtoolsCtx`
 			// (adapter.ts) so every DOM access must go through `window.*`. A
 			// stray bare `document.body` reference used to crash here with
 			// `TypeError: cannot read property 'body' of undefined` on the
@@ -96,9 +96,9 @@ describe("createAdapter", () => {
 			const child = window.document.createElement("div");
 			fakeBody.appendChild(child);
 
-			const originalCtxDocument = preactDevtoolsCtx.document;
+			const originalCtxDocument = lynx.preactDevtoolsCtx.document;
 			const originalGlobalDocument = (globalThis as any).document;
-			(preactDevtoolsCtx as any).document = { body: fakeBody };
+			(lynx.preactDevtoolsCtx as any).document = { body: fakeBody };
 
 			// Simulate the ReactLynx Background VM, where the bundler-resolved
 			// `document` global does not exist. Without the fix this is what
@@ -120,7 +120,7 @@ describe("createAdapter", () => {
 				expect(sortMessages.length).to.equal(1);
 				expect(sortMessages[0].data).to.deep.equal([42]);
 			} finally {
-				(preactDevtoolsCtx as any).document = originalCtxDocument;
+				(lynx.preactDevtoolsCtx as any).document = originalCtxDocument;
 				(globalThis as any).document = originalGlobalDocument;
 			}
 		});

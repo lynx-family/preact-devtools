@@ -12,16 +12,16 @@ export function setupReactLynx() {
 			}
 
 			// @ts-ignore
-			globalThis.preactDevtoolsCtx ||= {};
+			lynx.preactDevtoolsCtx ||= {};
 
-			const __DEBUG__ = globalThis.preactDevtoolsCtx.__DEBUG__;
+			const __DEBUG__ = lynx.preactDevtoolsCtx.__DEBUG__;
 			if (__DEBUG__) {
 				console.log("[PREACT DEVTOOLS] debug mode is enabled");
 			}
 
 			if (__DEBUG__) {
 				// For quick debug in HDT console
-				Object.assign(preactDevtoolsCtx, {
+				Object.assign(lynx.preactDevtoolsCtx, {
 					lynx,
 					__page,
 					__root,
@@ -34,13 +34,13 @@ export function setupReactLynx() {
 				string,
 				((e: { source: any; data: any }) => void)[]
 			> = {};
-			preactDevtoolsCtx.addEventListener = (type, callback) => {
+			lynx.preactDevtoolsCtx.addEventListener = (type, callback) => {
 				if (!listeners[type]) {
 					listeners[type] = [];
 				}
 				listeners[type].push(callback);
 			};
-			preactDevtoolsCtx.postMessage = (
+			lynx.preactDevtoolsCtx.postMessage = (
 				{ source, type, data },
 				// eslint-disable-next-line @typescript-eslint/no-unused-vars
 				_targetOrigin,
@@ -48,7 +48,7 @@ export function setupReactLynx() {
 				for (let i = 0; i < (listeners["message"]?.length ?? 0); i++) {
 					listeners["message"]?.[i]?.({
 						// in-App to-self message
-						source: preactDevtoolsCtx,
+						source: lynx.preactDevtoolsCtx,
 						data: {
 							source,
 							type,
@@ -86,7 +86,7 @@ export function setupReactLynx() {
 
 				for (let i = 0; i < (listeners["message"]?.length ?? 0); i++) {
 					listeners["message"]?.[i]?.({
-						source: preactDevtoolsCtx,
+						source: lynx.preactDevtoolsCtx,
 						data: {
 							source,
 							type,
@@ -97,12 +97,12 @@ export function setupReactLynx() {
 			});
 
 			if (
-				typeof preactDevtoolsCtx.localStorage === "undefined" ||
-				preactDevtoolsCtx.localStorage === null
+				typeof lynx.preactDevtoolsCtx.localStorage === "undefined" ||
+				lynx.preactDevtoolsCtx.localStorage === null
 			) {
 				const storage: Record<string, string> = {};
 
-				preactDevtoolsCtx.localStorage = {
+				lynx.preactDevtoolsCtx.localStorage = {
 					getItem: function (key) {
 						if (__DEBUG__) console.log(`getItem called with key: ${key}`);
 						return Object.prototype.hasOwnProperty.call(storage, key)
@@ -140,8 +140,8 @@ export function setupReactLynx() {
 			}
 
 			if (
-				typeof preactDevtoolsCtx.performance === "undefined" ||
-				preactDevtoolsCtx.performance === null
+				typeof lynx.preactDevtoolsCtx.performance === "undefined" ||
+				lynx.preactDevtoolsCtx.performance === null
 			) {
 				if (__DEBUG__) console.log("Mocking performance API...");
 
@@ -149,7 +149,7 @@ export function setupReactLynx() {
 				const measures: any[] = [];
 				const startTime = Date.now();
 
-				preactDevtoolsCtx.performance = {
+				lynx.preactDevtoolsCtx.performance = {
 					now: function () {
 						return Date.now() - startTime;
 					},
@@ -238,20 +238,20 @@ export function setupReactLynx() {
 			// Shims for:
 			// const treeParent = ...
 			if (
-				typeof preactDevtoolsCtx.Node === "undefined" ||
-				preactDevtoolsCtx.Node === null
+				typeof lynx.preactDevtoolsCtx.Node === "undefined" ||
+				lynx.preactDevtoolsCtx.Node === null
 			) {
 				// @ts-ignore
-				preactDevtoolsCtx.Node = __root.__proto__.constructor;
+				lynx.preactDevtoolsCtx.Node = __root.__proto__.constructor;
 			}
 			// }
 			// Shims for:
 			// const sorted = sortRoots(document.body, roots);
 			if (
-				typeof preactDevtoolsCtx.document === "undefined" ||
-				preactDevtoolsCtx.document === null
+				typeof lynx.preactDevtoolsCtx.document === "undefined" ||
+				lynx.preactDevtoolsCtx.document === null
 			) {
-				preactDevtoolsCtx.document = {
+				lynx.preactDevtoolsCtx.document = {
 					// @ts-ignore
 					body: __root,
 				};
@@ -259,11 +259,11 @@ export function setupReactLynx() {
 			// Shims for:
 			// else if (data instanceof window.Blob) {
 			if (
-				typeof preactDevtoolsCtx.Blob === "undefined" ||
-				preactDevtoolsCtx.Blob === null
+				typeof lynx.preactDevtoolsCtx.Blob === "undefined" ||
+				lynx.preactDevtoolsCtx.Blob === null
 			) {
 				// @ts-ignore
-				preactDevtoolsCtx.Blob = class Blob {
+				lynx.preactDevtoolsCtx.Blob = class Blob {
 					constructor(parts: any, options: any) {
 						if (__DEBUG__) console.log("Blob constructor", parts, options);
 					}

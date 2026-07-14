@@ -59,7 +59,7 @@ export function createAdapter(
 		{ renderReasons?: boolean; hooks?: boolean; profiling?: boolean }
 	> = new Map(),
 ) {
-	const window = preactDevtoolsCtx;
+	const window = lynx.preactDevtoolsCtx;
 
 	const { listen, send, listenToPage } = port;
 
@@ -167,7 +167,7 @@ export function createAdapter(
 			roots = roots.concat(m);
 		});
 
-		// `window === preactDevtoolsCtx`, see top of `createAdapter`. The
+		// `window === lynx.preactDevtoolsCtx`, see top of `createAdapter`. The
 		// ReactLynx host shims `document.body` with the background root
 		// snapshot (see `react-lynx/setup.ts`), which is structurally
 		// compatible with the small subset of `Node` used by `sortRoots`.

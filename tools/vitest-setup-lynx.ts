@@ -25,8 +25,16 @@ const { window } = jsdom;
 (globalThis as any).performance = performance;
 (options as any).document = window.document;
 
-(globalThis as any).preactDevtoolsCtx = {
+const preactDevtoolsCtx = {
 	...lynxTestingEnv.mainThread.globalThis,
 	performance,
 	Blob: window.Blob,
 };
+
+// `lynx` is swapped between the emulated threads on every switch, so attach the
+// context to both thread globals (rather than the real `globalThis`, which the
+// switch clobbers) to keep `lynx.preactDevtoolsCtx` available throughout.
+(lynxTestingEnv.mainThread.globalThis as any).lynx.preactDevtoolsCtx =
+	preactDevtoolsCtx;
+(lynxTestingEnv.backgroundThread.globalThis as any).lynx.preactDevtoolsCtx =
+	preactDevtoolsCtx;
