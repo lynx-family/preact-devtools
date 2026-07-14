@@ -175,10 +175,6 @@ export function createHook(port: PortPageHook): DevtoolsHook {
 			renderers.forEach(r => {
 				if (r.clear) r.clear();
 			});
-			// The background JS context is reused across page navigations, so a
-			// stale `globalThis.preactDevtoolsCtx` from the closed page would be
-			// picked up by `globalThis.preactDevtoolsCtx ||= {}` in `setup.ts` on
-			// the next page. Delete it so each page starts with a fresh context.
 			delete (globalThis as any).preactDevtoolsCtx;
 		};
 	}
