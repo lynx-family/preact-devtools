@@ -46,6 +46,14 @@ export function createIdMappingState<T extends SharedVNode>(
 		},
 
 		updateIdToUniqueIdRelation: function (snapshotId: number, id: number) {
+			// Hosts without the `getUniqueIdListBySnapshotId` lepus debug method
+			// (e.g. the web platform) cannot map vnodes to native UI nodes; skip
+			// instead of spamming "Method not found" errors on every vnode.
+			if (
+				!(globalThis as any).lynx?.preactDevtoolsCtx?.supportsUniqueIdMapping
+			) {
+				return;
+			}
 			lynx
 				// @ts-expect-error type error
 				.getNativeApp()

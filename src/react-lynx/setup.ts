@@ -29,6 +29,11 @@ export function setupReactLynx() {
 			// @ts-ignore
 			lynx.preactDevtoolsCtx ||= {};
 
+			// Native Lynx implements the `getUniqueIdListBySnapshotId` lepus debug
+			// method used for Elements/screencast linkage; the web platform does
+			// not (yet). Hosts can override this before setup runs.
+			lynx.preactDevtoolsCtx.supportsUniqueIdMapping ??= hasNativeDevtool;
+
 			const __DEBUG__ = lynx.preactDevtoolsCtx.__DEBUG__;
 			if (__DEBUG__) {
 				console.log("[PREACT DEVTOOLS] debug mode is enabled");
