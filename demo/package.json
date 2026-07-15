@@ -6,7 +6,7 @@
 		"dev:web": "npm run build && rsbuild dev --open"
 	},
 	"dependencies": {
-		"@lynx-js/react": "0.121.2"
+		"@lynx-js/react": "0.122.1"
 	},
 	"devDependencies": {
 		"@lynx-js/lynx-core": "^0.1.4",
