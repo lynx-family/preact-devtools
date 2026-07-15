@@ -13,9 +13,14 @@ export function setupReactLynx() {
 			// @ts-ignore
 			const hasNativeDevtool = typeof lynx.getDevtool === "function";
 			const WebChannel = (globalThis as any).BroadcastChannel;
+			// BroadcastChannel broadcasts across the whole origin, so two tabs (or
+			// two views) debugging the same origin would cross-talk on the default
+			// name — the host can scope the channel per view through globalProps.
+			const webChannelName =
+				(lynx as any).__globalProps?.preactDevtoolsChannel ?? "preact-devtools";
 			const webChannel =
 				!hasNativeDevtool && typeof WebChannel === "function"
-					? new WebChannel("preact-devtools")
+					? new WebChannel(webChannelName)
 					: null;
 			if (!hasNativeDevtool && !webChannel) {
 				throw new Error(

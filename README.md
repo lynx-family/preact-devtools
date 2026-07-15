@@ -23,6 +23,18 @@ same-origin `BroadcastChannel` named `preact-devtools`, which the background wor
 shares with the hosting page. The same `import '@lynx-js/preact-devtools'` opt-in
 applies (set `REACT_DEVTOOL=1` to keep it in production builds).
 
+A `BroadcastChannel` broadcasts across the whole origin, so two tabs (or two
+`lynx-view`s) debugged at once would cross-talk on the default name. The host can
+scope the channel per view by passing a unique name through globalProps — the
+client picks up `globalProps.preactDevtoolsChannel` when present:
+
+```js
+view.setAttribute(
+	"global-props",
+	JSON.stringify({ preactDevtoolsChannel: `preact-devtools-${myViewId}` }),
+);
+```
+
 Any same-origin consumer can join that channel to host a devtools UI. To reuse the
 official [Preact Devtools browser extension](https://chromewebstore.google.com/detail/preact-developer-tools/ilcajpmogmhpliinlbcdebhbcanbghmd),
 relay the channel to the extension's content-script protocol from the hosting page:
