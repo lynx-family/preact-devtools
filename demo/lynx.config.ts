@@ -29,11 +29,14 @@ export default defineConfig({
 		lynx: {},
 		// Web platform bundle (`main.web.bundle`, decodable by `@lynx-js/web-core`).
 		// Serve it in a real browser with `npm run dev:web`.
-		web: {},
+		web: {
+			output: {
+				minify: false,
+			},
+		},
 	},
 	output: {
-		minify: {
-			css: false,
-		},
+		// Keep the demo bundles readable for debugging; size is irrelevant here.
+		minify: false,
 	},
 });

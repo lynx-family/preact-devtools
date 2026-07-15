@@ -296,21 +296,34 @@ export function setupReactLynx() {
 				};
 			}
 
-			// On the web platform these become async modules (they transitively
-			// import async externals such as `preact`), so a CJS require()
-			// returns a Promise of the namespace. Chain them to keep the
-			// required order: the hook must be installed before
-			// `preact/devtools` connects to it. On native Lynx both requires
-			// stay synchronous and only the success log becomes a microtask.
-			Promise.resolve(require("../shells/shared/installHook"))
-				.then(() => Promise.resolve(require("preact/devtools")))
-				.then(() => {
-					console.log("[PREACT DEVTOOLS] Devtools initialized successfully");
-				})
-				.catch(e => {
-					console.warn("[PREACT DEVTOOLS] Devtools failed to initialize:");
-					console.warn(e);
-				});
+			// When ReactLynx is consumed as an *async* external bundle these
+			// become async modules (their `preact` import is mounted as a
+			// Promise), so a CJS require() returns a Promise of the namespace
+			// and we must chain them to keep the required order: the hook must
+			// be installed before `preact/devtools` connects to it.
+			//
+			// When modules are synchronous, attach synchronously: deferring to a
+			// microtask would let the app's first `root.render()` run *before*
+			// the options hooks are wrapped, and on a static app that first
+			// commit is the only one — the devtools would never see the tree.
+			const installHookModule = require("../shells/shared/installHook");
+			if (
+				installHookModule &&
+				typeof (installHookModule as any).then === "function"
+			) {
+				(installHookModule as Promise<unknown>)
+					.then(() => Promise.resolve(require("preact/devtools")))
+					.then(() => {
+						console.log("[PREACT DEVTOOLS] Devtools initialized successfully");
+					})
+					.catch(e => {
+						console.warn("[PREACT DEVTOOLS] Devtools failed to initialize:");
+						console.warn(e);
+					});
+			} else {
+				require("preact/devtools");
+				console.log("[PREACT DEVTOOLS] Devtools initialized successfully");
+			}
 		} catch (e) {
 			console.warn("[PREACT DEVTOOLS] Devtools failed to initialize:");
 			console.warn(e);

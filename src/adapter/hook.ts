@@ -108,6 +108,11 @@ export function createHook(port: PortPageHook): DevtoolsHook {
 		number,
 		{ renderReasons?: boolean; hooks?: boolean; profiling?: boolean }
 	>();
+	// A preact instance must only be instrumented once: HMR update loops
+	// re-evaluate the devtools init and would otherwise register a new
+	// renderer on every cycle, ballooning `renderers` (and with it every
+	// `refresh` fan-out) without bound.
+	const attachedOptions = new WeakMap<object, number>();
 	let uid = 0;
 	let status: "connected" | "pending" | "disconnected" = "disconnected";
 
@@ -212,6 +217,17 @@ export function createHook(port: PortPageHook): DevtoolsHook {
 			console.error("__PREACT_DEVTOOLS__.listen() is deprecated.");
 		},
 		attachPreact: (version, options, config) => {
+			const attached = attachedOptions.get(options);
+			if (attached !== undefined) {
+				if (__DEBUG__) {
+					// eslint-disable-next-line no-console
+					console.log(
+						"[PREACT DEVTOOLS] preact instance already attached, skipping",
+					);
+				}
+				return attached;
+			}
+
 			if (status === "disconnected") {
 				init();
 			}
@@ -278,7 +294,9 @@ export function createHook(port: PortPageHook): DevtoolsHook {
 					version,
 				);
 				setupOptionsV10(options, renderer, roots, config as any);
-				return attachRenderer(renderer, supports);
+				const attachedId = attachRenderer(renderer, supports);
+				attachedOptions.set(options, attachedId);
+				return attachedId;
 			} else if (preactVersionMatch.major === 11) {
 				const idMapper = createIdMappingState(
 					namespace,
@@ -298,11 +316,13 @@ export function createHook(port: PortPageHook): DevtoolsHook {
 					version,
 				);
 				setupOptionsV11(options as any, renderer, roots, config, profiler);
-				return attachRenderer(renderer, {
+				const attachedId = attachRenderer(renderer, {
 					hooks: true,
 					renderReasons: true,
 					profiling: true,
 				});
+				attachedOptions.set(options, attachedId);
+				return attachedId;
 			}
 
 			// eslint-disable-next-line no-console
