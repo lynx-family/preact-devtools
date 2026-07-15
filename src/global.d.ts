@@ -65,9 +65,7 @@ declare global {
 	var preactDevtoolsLDTCtx: PreactDevtoolsLDTCtx;
 }
 
-// The devtools context is hung off the per-page `lynx` object (instead of the
-// process-wide `globalThis`, which persists across page navigations) so every
-// page starts with a fresh context.
+// Context lives on the per-page `lynx`, not `globalThis` (reused across pages).
 declare module "@lynx-js/types/background" {
 	interface Lynx {
 		preactDevtoolsCtx: PreactDevtoolsCtx;
