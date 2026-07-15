@@ -14,6 +14,35 @@ import '@lynx-js/preact-devtools'
 
 See the documentation of [Preact Devtools Panel in Lynx Devtool](https://lynxjs.org/guide/devtool/panels/preact-devtools-panel.html#preact-devtools-panel) for more information.
 
+### Web platform
+
+On native Lynx the client talks to the devtools panel over the CDP channel exposed by
+`lynx.getDevtool()`. On the [web platform](https://lynxjs.org/guide/start/fragments/web/platform-reminder.html)
+there is no `getDevtool()`; the client instead transports the same protocol over a
+same-origin `BroadcastChannel` named `preact-devtools`, which the background worker
+shares with the hosting page. The same `import '@lynx-js/preact-devtools'` opt-in
+applies (set `REACT_DEVTOOL=1` to keep it in production builds).
+
+Any same-origin consumer can join that channel to host a devtools UI. To reuse the
+official [Preact Devtools browser extension](https://chromewebstore.google.com/detail/preact-developer-tools/ilcajpmogmhpliinlbcdebhbcanbghmd),
+relay the channel to the extension's content-script protocol from the hosting page:
+
+```js
+const channel = new BroadcastChannel("preact-devtools");
+// worker client -> extension (messages already carry `source: 'preact-page-hook'`)
+channel.onmessage = e => window.postMessage(e.data, "*");
+// extension -> worker client
+window.addEventListener("message", e => {
+	if (e.source === window && e.data?.source === "preact-devtools-to-client") {
+		channel.postMessage(e.data);
+	}
+});
+```
+
+With this bridge in place the extension icon reports the page as using Preact and
+the `Preact` tab in the browser devtools inspects the ReactLynx app running in the
+worker.
+
 ## Contributing
 
 - [`ldt-plugin`](./ldt-plugin/) contains the source code of Preact Devtools Panel in Lynx Devtool. Run it by `npm run dev:ldt-plugin` when developing, and `npm run build:ldt-plugin` to build it.
