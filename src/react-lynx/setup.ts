@@ -60,22 +60,28 @@ export function setupReactLynx() {
 				}
 				listeners[type].push(callback);
 			};
+			// One faulty listener must not break delivery to the rest (or crash
+			// the transport's onmessage handler).
+			const dispatch = (message: { source: any; type: any; data: any }) => {
+				for (let i = 0; i < (listeners["message"]?.length ?? 0); i++) {
+					try {
+						listeners["message"]?.[i]?.({
+							source: lynx.preactDevtoolsCtx,
+							data: message,
+						});
+					} catch (e) {
+						console.warn("[PREACT DEVTOOLS] listener failed:", e);
+					}
+				}
+			};
+
 			lynx.preactDevtoolsCtx.postMessage = (
 				{ source, type, data },
 				// eslint-disable-next-line @typescript-eslint/no-unused-vars
 				_targetOrigin,
 			) => {
-				for (let i = 0; i < (listeners["message"]?.length ?? 0); i++) {
-					listeners["message"]?.[i]?.({
-						// in-App to-self message
-						source: lynx.preactDevtoolsCtx,
-						data: {
-							source,
-							type,
-							data,
-						},
-					});
-				}
+				// in-App to-self message
+				dispatch({ source, type, data });
 
 				if (__DEBUG__) {
 					// App -> Devtools
@@ -105,17 +111,7 @@ export function setupReactLynx() {
 					console.log("devtools -> frontend message received", dataObj);
 				}
 				const { source, type, data } = dataObj;
-
-				for (let i = 0; i < (listeners["message"]?.length ?? 0); i++) {
-					listeners["message"]?.[i]?.({
-						source: lynx.preactDevtoolsCtx,
-						data: {
-							source,
-							type,
-							data,
-						},
-					});
-				}
+				dispatch({ source, type, data });
 			};
 			if (hasNativeDevtool) {
 				// @ts-ignore

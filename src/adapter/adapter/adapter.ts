@@ -113,8 +113,9 @@ export function createAdapter(
 		if (id === null) return;
 		const res = getRendererByVNodeId(renderers, id)?.findDomForVNode(id);
 
-		if (res && res.length > 0) {
-			(globalThis as any).__PREACT_DEVTOOLS__.$0 = res[0];
+		const hook = (globalThis as any).__PREACT_DEVTOOLS__;
+		if (hook && res && res.length > 0) {
+			hook.$0 = res[0];
 		}
 		inspect(id);
 	});
@@ -271,8 +272,12 @@ export function createAdapter(
 	});
 
 	listen("load-host-selection", () => {
-		const hook: DevtoolsHook = (window as any).__PREACT_DEVTOOLS__;
-		const selected = hook.$0;
+		// The browser extension mirrors the devtools' `$0` element selection onto
+		// the page hook. On hosts where the hook lives elsewhere (e.g. a ReactLynx
+		// background worker) there is no host DOM selection to map — skip instead
+		// of crashing the whole devtools message loop.
+		const hook: DevtoolsHook | undefined = (window as any).__PREACT_DEVTOOLS__;
+		const selected = hook && hook.$0;
 		if (selected) {
 			forAll(r => {
 				const id = r.findVNodeIdForDom(selected);
@@ -285,7 +290,8 @@ export function createAdapter(
 
 	listen("view-source", id => {
 		const vnode = getRendererByVNodeId(renderers, id)?.getVNodeById(id);
-		const hook: DevtoolsHook = (window as any).__PREACT_DEVTOOLS__;
+		const hook: DevtoolsHook | undefined = (window as any).__PREACT_DEVTOOLS__;
+		if (!hook) return;
 
 		if (vnode && typeof vnode.type === "function") {
 			const { type } = vnode;
