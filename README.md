@@ -43,6 +43,9 @@ With this bridge in place the extension icon reports the page as using Preact an
 the `Preact` tab in the browser devtools inspects the ReactLynx app running in the
 worker.
 
+Try it locally: `npm run dev:web` inside [`demo/`](./demo/) builds the demo as a
+`main.web.bundle` and serves it in a real browser with this bridge preinstalled.
+
 ## Contributing
 
 - [`ldt-plugin`](./ldt-plugin/) contains the source code of Preact Devtools Panel in Lynx Devtool. Run it by `npm run dev:ldt-plugin` when developing, and `npm run build:ldt-plugin` to build it.

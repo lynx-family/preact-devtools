@@ -26,11 +26,13 @@ if (process.env.NODE_ENV !== "test") {
 			}
 		};
 		if (mod && typeof mod.then === "function") {
-			// On the web platform `./setup` becomes an async module: its
-			// `@lynx-js/react/internal` import is an async external there, so a
-			// CJS require() yields a Promise of the namespace instead of the
-			// namespace itself. Await it — calling `.setupReactLynx()` directly
-			// on the Promise is what crashed the whole background chunk.
+			// When the app consumes ReactLynx as an *async* external bundle
+			// (`@lynx-js/react/internal` mounted as a Promise — always the case on
+			// the web platform, and opt-in on native Lynx), `./setup` becomes an
+			// async module, so a CJS require() yields a Promise of the namespace
+			// instead of the namespace itself. Await it — calling
+			// `.setupReactLynx()` directly on the Promise is what crashed the
+			// whole background chunk.
 			mod.then(callSetup, (e: unknown) => {
 				console.warn("[PREACT DEVTOOLS] Devtools failed to initialize:");
 				console.warn(e);

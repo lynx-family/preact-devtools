@@ -19,7 +19,10 @@ export function setupReactLynx() {
 					: null;
 			if (!hasNativeDevtool && !webChannel) {
 				throw new Error(
-					"`lynx.getDevtool` is not a function. Please upgrade your LynxSDK to the latest version.",
+					"No devtools transport is available: `lynx.getDevtool` is not a function " +
+						"(on native Lynx, please upgrade your LynxSDK to the latest version) " +
+						"and `BroadcastChannel` is not available (on the web platform, it is " +
+						"required to reach the devtools panel).",
 				);
 			}
 

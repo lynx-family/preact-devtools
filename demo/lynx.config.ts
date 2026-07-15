@@ -24,6 +24,13 @@ export default defineConfig({
 			enableRemoveCSSScope: false,
 		}),
 	],
+	environments: {
+		// Native Lynx bundle (`main.lynx.bundle`, open with LynxExplorer).
+		lynx: {},
+		// Web platform bundle (`main.web.bundle`, decodable by `@lynx-js/web-core`).
+		// Serve it in a real browser with `npm run dev:web`.
+		web: {},
+	},
 	output: {
 		minify: {
 			css: false,
