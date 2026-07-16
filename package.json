@@ -3,7 +3,20 @@
 	"version": "5.0.1",
 	"description": "Preact Devtools Extension",
 	"main": "lib/react-lynx/index.js",
-	"types": "lib/react-lynx/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./index.d.ts",
+			"default": "./lib/react-lynx/index.js"
+		},
+		"./web-host": {
+			"types": "./web-host.d.ts",
+			"default": "./web-host.js"
+		},
+		"./lib/*": "./lib/*",
+		"./dist/*": "./dist/*",
+		"./package.json": "./package.json"
+	},
+	"types": "./index.d.ts",
 	"scripts": {
 		"type-check": "tsc --noEmit && tsc -p tsconfig.vitest.json --noEmit",
 		"prebuild": "npm run type-check",
@@ -95,7 +108,8 @@
 		"LICENSE",
 		"CHANGELOG.md",
 		"web-host.js",
-		"web-host.d.ts"
+		"web-host.d.ts",
+		"index.d.ts"
 	],
 	"publishConfig": {
 		"access": "public"
