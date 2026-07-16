@@ -44,12 +44,8 @@ import the bundled host bridge once in the hosting page — it discovers every
 import "@lynx-js/preact-devtools/web-host";
 ```
 
-The bridge prefers the per-card devtool `MessagePort` exposed by
-`@lynx-js/web-core` (`lynxView.devtoolMessagePort` /
-[lynx-family/lynx-stack#2986](https://github.com/lynx-family/lynx-stack/pull/2986)),
-which is point-to-point and therefore safe with multiple views and tabs. On older
-web-core versions it falls back to the client's `BroadcastChannel` transport,
-honoring the per-view channel scoping described above.
+The bridge joins the client's `BroadcastChannel` transport, honoring the
+per-view channel scoping described above.
 
 With the bridge in place the extension icon reports the page as using Preact and
 the `Preact` tab in the browser devtools inspects the ReactLynx app running in the
