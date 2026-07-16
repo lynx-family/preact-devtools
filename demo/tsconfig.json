@@ -3,7 +3,7 @@
 		"jsx": "react-jsx",
 		"jsxImportSource": "@lynx-js/react",
 
-		"module": "node16",
+		"module": "node18",
 		"moduleResolution": "node16",
 
 		"strict": true,
