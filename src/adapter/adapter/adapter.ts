@@ -271,9 +271,8 @@ export function createAdapter(
 	});
 
 	listen("load-host-selection", () => {
-		// No host DOM selection to map on hosts without a ctx hook.
-		const hook: DevtoolsHook | undefined = (window as any).__PREACT_DEVTOOLS__;
-		const selected = hook && hook.$0;
+		const hook: DevtoolsHook = (window as any).__PREACT_DEVTOOLS__;
+		const selected = hook.$0;
 		if (selected) {
 			forAll(r => {
 				const id = r.findVNodeIdForDom(selected);
@@ -286,8 +285,7 @@ export function createAdapter(
 
 	listen("view-source", id => {
 		const vnode = getRendererByVNodeId(renderers, id)?.getVNodeById(id);
-		const hook: DevtoolsHook | undefined = (window as any).__PREACT_DEVTOOLS__;
-		if (!hook) return;
+		const hook: DevtoolsHook = (window as any).__PREACT_DEVTOOLS__;
 
 		if (vnode && typeof vnode.type === "function") {
 			const { type } = vnode;
