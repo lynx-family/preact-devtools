@@ -94,7 +94,8 @@
 		"README.md",
 		"LICENSE",
 		"CHANGELOG.md",
-		"web-host.js"
+		"web-host.js",
+		"web-host.d.ts"
 	],
 	"publishConfig": {
 		"access": "public"
