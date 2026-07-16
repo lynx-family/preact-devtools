@@ -54,6 +54,8 @@ worker.
 Try it locally: `npm run dev:web` inside [`demo/`](./demo/) builds the demo as a
 `main.web.bundle` and serves it in a real browser with this bridge preinstalled.
 
+TODO: highlight is not work on web platform since we modified `src/adapter/adapter/highlight.ts` but `preact-devtools-highlight` event is only supported in LynxDevtool. We cannot use the original logic of preact-devtools because we do not have `document` API on BTS worker.
+
 ## Contributing
 
 - [`ldt-plugin`](./ldt-plugin/) contains the source code of Preact Devtools Panel in Lynx Devtool. Run it by `npm run dev:ldt-plugin` when developing, and `npm run build:ldt-plugin` to build it.

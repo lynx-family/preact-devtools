@@ -13,7 +13,7 @@ export default defineConfig({
 	// },
 	source: {
 		define: {
-			"globalThis.preactDevtoolsCtx.__DEBUG__": "true",
+			"lynx.preactDevtoolsCtx.__DEBUG__": "true",
 		},
 	},
 	plugins: [

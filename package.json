@@ -22,7 +22,7 @@
 		"prebuild": "npm run type-check",
 		"prepublishOnly": "npm run build:lynx",
 		"build": "node tools/build.mjs --browser chrome,edge,firefox,inline && npm run build:inline:types",
-		"build:chrome": "node tools/build.mjs --browser chrome --debug",
+		"build:chrome": "node tools/build.mjs --browser chrome",
 		"build:edge": "node tools/build.mjs --browser edge",
 		"build:firefox": "node tools/build.mjs --browser firefox",
 		"build:inline:types": "tsc -p tsconfig.inline.json",

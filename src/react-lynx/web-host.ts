@@ -8,7 +8,7 @@ interface DevtoolPayload {
 	data: unknown;
 }
 
-const bridgedChannels = new Set<string>();
+const bridgedChannels = /* @__PURE__ */ new Set<string>();
 
 function bridgeBroadcastChannel(channelName: string) {
 	if (bridgedChannels.has(channelName)) return;
@@ -45,15 +45,21 @@ function scan(root: ParentNode) {
 	root.querySelectorAll("lynx-view").forEach(attachToView);
 }
 
-scan(document);
-new MutationObserver(mutations => {
-	for (const mutation of mutations) {
-		for (const node of mutation.addedNodes) {
-			if (!(node instanceof Element)) continue;
-			if (node.tagName === "LYNX-VIEW") attachToView(node);
-			else scan(node);
+function main() {
+	scan(document);
+	new MutationObserver(mutations => {
+		for (const mutation of mutations) {
+			for (const node of mutation.addedNodes) {
+				if (!(node instanceof Element)) continue;
+				if (node.tagName === "LYNX-VIEW") attachToView(node);
+				else scan(node);
+			}
 		}
-	}
-}).observe(document.documentElement, { childList: true, subtree: true });
+	}).observe(document.documentElement, { childList: true, subtree: true });
+}
+
+if (process.env.NODE_ENV === "development") {
+	main();
+}
 
 export {};

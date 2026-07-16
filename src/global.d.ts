@@ -1,5 +1,6 @@
 import { BackgroundSnapshotInstance } from "@lynx-js/react/runtime/lib/backgroundSnapshot";
 import type { UnsafeLynx } from "@lynx-js/types";
+import type { DevtoolsHook } from "./adapter/hook";
 
 interface FiberElement {}
 
@@ -15,7 +16,7 @@ declare global {
 	 */
 	interface PreactDevtoolsCtx {
 		__DEBUG__?: boolean;
-		__PREACT_DEVTOOLS__?: import("./adapter/hook").DevtoolsHook;
+		__PREACT_DEVTOOLS__?: DevtoolsHook;
 		lynx?: UnsafeLynx;
 		__page?: FiberElement;
 		__root?: BackgroundSnapshotInstance & {
@@ -24,6 +25,7 @@ declare global {
 		lynxCoreInject?: {
 			tt: any;
 		};
+		isWebPlatform?: boolean;
 		addEventListener: (
 			type: string,
 			listener: (e: { source: any; data: any }) => void,
@@ -66,9 +68,7 @@ declare global {
 	var preactDevtoolsLDTCtx: PreactDevtoolsLDTCtx;
 }
 
-// The devtools context is hung off the per-page `lynx` object (instead of the
-// process-wide `globalThis`, which persists across page navigations) so every
-// page starts with a fresh context.
+// Context lives on the per-page `lynx`, not `globalThis` (reused across pages).
 declare module "@lynx-js/types/background" {
 	interface Lynx {
 		preactDevtoolsCtx: PreactDevtoolsCtx;
