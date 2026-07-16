@@ -29,6 +29,10 @@ export default defineConfig({
 		lynx: {},
 		// Web platform bundle (`main.web.bundle`, decodable by `@lynx-js/web-core`).
 		// Serve it in a real browser with `npm run dev:web`.
+		// NOTE: the top-level `output.minify: false` below does not reach the
+		// web bundle (verified on rspeedy 0.15 and 0.16: the web output stays
+		// minified without this per-environment override — likely an
+		// inheritance gap in the web environment's encode pipeline).
 		web: {
 			output: {
 				minify: false,
