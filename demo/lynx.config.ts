@@ -3,6 +3,9 @@ import { defineConfig } from "@lynx-js/rspeedy";
 import { pluginQRCode } from "@lynx-js/qrcode-rsbuild-plugin";
 import { pluginReactLynx } from "@lynx-js/react-rsbuild-plugin";
 
+// Set NO_MINIFY=1 to build readable bundles for debugging.
+const noMinify = !!process.env.NO_MINIFY;
+
 export default defineConfig({
 	// output: {
 	//   filenameHash: 'contenthash:8',
@@ -27,13 +30,7 @@ export default defineConfig({
 	environments: {
 		lynx: {},
 		// The top-level `output.minify` does not reach the web bundle.
-		web: {
-			output: {
-				minify: false,
-			},
-		},
+		web: noMinify ? { output: { minify: false } } : {},
 	},
-	output: {
-		minify: false,
-	},
+	output: noMinify ? { minify: false } : {},
 });
