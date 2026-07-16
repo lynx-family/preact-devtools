@@ -31,6 +31,14 @@
 		"typescript/no-explicit-any": "off",
 		"typescript/no-non-null-assertion": "off"
 	},
+	"overrides": [
+		{
+			"files": ["src/react-lynx/**"],
+			"rules": {
+				"no-console": "off"
+			}
+		}
+	],
 	"ignorePatterns": [
 		"src/examples/**",
 		"dist/**",

@@ -1,5 +1,6 @@
 import { BackgroundSnapshotInstance } from "@lynx-js/react/runtime/lib/backgroundSnapshot";
 import type { UnsafeLynx } from "@lynx-js/types";
+import type { DevtoolsHook } from "./adapter/hook";
 
 interface FiberElement {}
 
@@ -15,6 +16,7 @@ declare global {
 	 */
 	interface PreactDevtoolsCtx {
 		__DEBUG__?: boolean;
+		__PREACT_DEVTOOLS__?: DevtoolsHook;
 		lynx?: UnsafeLynx;
 		__page?: FiberElement;
 		__root?: BackgroundSnapshotInstance & {
@@ -23,6 +25,7 @@ declare global {
 		lynxCoreInject?: {
 			tt: any;
 		};
+		isWebPlatform?: boolean;
 		addEventListener: (
 			type: string,
 			listener: (e: { source: any; data: any }) => void,

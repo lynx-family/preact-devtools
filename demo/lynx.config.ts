@@ -3,6 +3,9 @@ import { defineConfig } from "@lynx-js/rspeedy";
 import { pluginQRCode } from "@lynx-js/qrcode-rsbuild-plugin";
 import { pluginReactLynx } from "@lynx-js/react-rsbuild-plugin";
 
+// Set NO_MINIFY=1 to build readable bundles for debugging.
+const noMinify = !!process.env.NO_MINIFY;
+
 export default defineConfig({
 	// output: {
 	//   filenameHash: 'contenthash:8',
@@ -10,7 +13,7 @@ export default defineConfig({
 	// },
 	source: {
 		define: {
-			"globalThis.preactDevtoolsCtx.__DEBUG__": "true",
+			"lynx.preactDevtoolsCtx.__DEBUG__": "true",
 		},
 	},
 	plugins: [
@@ -24,9 +27,10 @@ export default defineConfig({
 			enableRemoveCSSScope: false,
 		}),
 	],
-	output: {
-		minify: {
-			css: false,
-		},
+	environments: {
+		lynx: {},
+		// The top-level `output.minify` does not reach the web bundle.
+		web: noMinify ? { output: { minify: false } } : {},
 	},
+	output: noMinify ? { minify: false } : {},
 });

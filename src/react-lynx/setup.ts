@@ -5,9 +5,20 @@ export function setupReactLynx() {
 	if (__BACKGROUND__) {
 		try {
 			// @ts-ignore
-			if (typeof lynx.getDevtool !== "function") {
+			const hasNativeDevtool = typeof lynx.getDevtool === "function";
+			const WebChannel = (globalThis as any).BroadcastChannel;
+			const webChannelName =
+				(lynx as any).__globalProps?.preactDevtoolsChannel ?? "preact-devtools";
+			const webChannel =
+				!hasNativeDevtool && typeof WebChannel === "function"
+					? new WebChannel(webChannelName)
+					: null;
+			if (!hasNativeDevtool && !webChannel) {
 				throw new Error(
-					"`lynx.getDevtool` is not a function. Please upgrade your LynxSDK to the latest version.",
+					"No devtools transport is available: `lynx.getDevtool` is not a function " +
+						"(on native Lynx, please upgrade your LynxSDK to the latest version) " +
+						"and `BroadcastChannel` is not available (on the web platform, it is " +
+						"required to reach the devtools panel).",
 				);
 			}
 
@@ -40,61 +51,64 @@ export function setupReactLynx() {
 				}
 				listeners[type].push(callback);
 			};
+			const dispatch = (message: { source: any; type: any; data: any }) => {
+				for (let i = 0; i < (listeners["message"]?.length ?? 0); i++) {
+					try {
+						listeners["message"]?.[i]?.({
+							source: lynx.preactDevtoolsCtx,
+							data: message,
+						});
+					} catch (e) {
+						console.warn("[PREACT DEVTOOLS] listener failed:", e);
+					}
+				}
+			};
+
 			lynx.preactDevtoolsCtx.postMessage = (
 				{ source, type, data },
 				// eslint-disable-next-line @typescript-eslint/no-unused-vars
 				_targetOrigin,
 			) => {
-				for (let i = 0; i < (listeners["message"]?.length ?? 0); i++) {
-					listeners["message"]?.[i]?.({
-						// in-App to-self message
-						source: lynx.preactDevtoolsCtx,
-						data: {
-							source,
-							type,
-							data,
-						},
-					});
-				}
+				dispatch({ source, type, data });
 
 				if (__DEBUG__) {
 					// App -> Devtools
-					console.log("lynx.getDevtool().dispatchEvent", {
+					console.log("devtools transport send", {
 						source,
 						type,
 						data,
 					});
 				}
-				// @ts-ignore
-				lynx.getDevtool().dispatchEvent({
-					type: "PreactDevtools",
-					data: JSON.stringify({
-						source,
-						type,
-						data,
-					}),
-				});
-			};
-
-			// @ts-ignore
-			lynx.getDevtool().addEventListener("PreactDevtools", e => {
-				const dataObj = JSON.parse(e.data);
-				if (__DEBUG__) {
-					console.log("hdt -> frontend message received", dataObj);
-				}
-				const { source, type, data } = dataObj;
-
-				for (let i = 0; i < (listeners["message"]?.length ?? 0); i++) {
-					listeners["message"]?.[i]?.({
-						source: lynx.preactDevtoolsCtx,
-						data: {
+				if (hasNativeDevtool) {
+					// @ts-ignore
+					lynx.getDevtool().dispatchEvent({
+						type: "PreactDevtools",
+						data: JSON.stringify({
 							source,
 							type,
 							data,
-						},
+						}),
 					});
+				} else {
+					webChannel.postMessage({ source, type, data });
 				}
-			});
+			};
+
+			const deliver = (dataObj: { source: any; type: any; data: any }) => {
+				if (__DEBUG__) {
+					console.log("devtools -> frontend message received", dataObj);
+				}
+				const { source, type, data } = dataObj;
+				dispatch({ source, type, data });
+			};
+			if (hasNativeDevtool) {
+				// @ts-ignore
+				lynx.getDevtool().addEventListener("PreactDevtools", e => {
+					deliver(JSON.parse(e.data));
+				});
+			} else {
+				webChannel.onmessage = (e: { data: any }) => deliver(e.data);
+			}
 
 			if (
 				typeof lynx.preactDevtoolsCtx.localStorage === "undefined" ||
@@ -270,10 +284,47 @@ export function setupReactLynx() {
 				};
 			}
 
-			require("../shells/shared/installHook");
-			require("preact/devtools");
+			// preact/devtools discovers the hook on globalThis, which is shared
+			// across cards in Lynx's shared-context mode — mount it there only
+			// while its initDevTools runs.
+			const mountHook = () => {
+				(globalThis as any).__PREACT_DEVTOOLS__ =
+					lynx.preactDevtoolsCtx.__PREACT_DEVTOOLS__;
+			};
+			const unmountHook = () => {
+				delete (globalThis as any).__PREACT_DEVTOOLS__;
+			};
 
-			console.log("[PREACT DEVTOOLS] Devtools initialized successfully");
+			// Must stay synchronous when modules are sync: deferring attach past
+			// the app's first render loses the initial commit for good.
+			const installHookModule = require("../shells/shared/installHook");
+			if (
+				installHookModule &&
+				typeof (installHookModule as any).then === "function"
+			) {
+				(installHookModule as Promise<unknown>)
+					.then(() => {
+						mountHook();
+						return Promise.resolve(require("preact/devtools"));
+					})
+					.then(() => {
+						unmountHook();
+						console.log("[PREACT DEVTOOLS] Devtools initialized successfully");
+					})
+					.catch(e => {
+						unmountHook();
+						console.warn("[PREACT DEVTOOLS] Devtools failed to initialize:");
+						console.warn(e);
+					});
+			} else {
+				mountHook();
+				try {
+					require("preact/devtools");
+				} finally {
+					unmountHook();
+				}
+				console.log("[PREACT DEVTOOLS] Devtools initialized successfully");
+			}
 		} catch (e) {
 			console.warn("[PREACT DEVTOOLS] Devtools failed to initialize:");
 			console.warn(e);
