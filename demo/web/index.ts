@@ -2,9 +2,7 @@ import "@lynx-js/web-elements/index.css";
 import "@lynx-js/web-core/client";
 import "@lynx-js/preact-devtools/web-host";
 
-const devtoolsChannelName = `preact-devtools-${Math.random()
-	.toString(36)
-	.slice(2)}`;
+const devtoolsChannelName = `preact-devtools-${crypto.randomUUID()}`;
 
 const view = document.createElement("lynx-view");
 view.setAttribute("url", "/main.web.bundle");
