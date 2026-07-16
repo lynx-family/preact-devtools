@@ -113,9 +113,8 @@ export function createAdapter(
 		if (id === null) return;
 		const res = getRendererByVNodeId(renderers, id)?.findDomForVNode(id);
 
-		const hook = (globalThis as any).__PREACT_DEVTOOLS__;
-		if (hook && res && res.length > 0) {
-			hook.$0 = res[0];
+		if (res && res.length > 0) {
+			(globalThis as any).__PREACT_DEVTOOLS__.$0 = res[0];
 		}
 		inspect(id);
 	});
