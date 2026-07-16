@@ -35,23 +35,23 @@ view.setAttribute(
 );
 ```
 
-Any same-origin consumer can join that channel to host a devtools UI. To reuse the
-official [Preact Devtools browser extension](https://chromewebstore.google.com/detail/preact-developer-tools/ilcajpmogmhpliinlbcdebhbcanbghmd),
-relay the channel to the extension's content-script protocol from the hosting page:
+To reuse the official
+[Preact Devtools browser extension](https://chromewebstore.google.com/detail/preact-developer-tools/ilcajpmogmhpliinlbcdebhbcanbghmd),
+import the bundled host bridge once in the hosting page — it discovers every
+`lynx-view` and relays its devtools protocol to the extension:
 
 ```js
-const channel = new BroadcastChannel("preact-devtools");
-// worker client -> extension (messages already carry `source: 'preact-page-hook'`)
-channel.onmessage = e => window.postMessage(e.data, "*");
-// extension -> worker client
-window.addEventListener("message", e => {
-	if (e.source === window && e.data?.source === "preact-devtools-to-client") {
-		channel.postMessage(e.data);
-	}
-});
+import "@lynx-js/preact-devtools/web-host";
 ```
 
-With this bridge in place the extension icon reports the page as using Preact and
+The bridge prefers the per-card devtool `MessagePort` exposed by
+`@lynx-js/web-core` (`lynxView.devtoolMessagePort` /
+[lynx-family/lynx-stack#2986](https://github.com/lynx-family/lynx-stack/pull/2986)),
+which is point-to-point and therefore safe with multiple views and tabs. On older
+web-core versions it falls back to the client's `BroadcastChannel` transport,
+honoring the per-view channel scoping described above.
+
+With the bridge in place the extension icon reports the page as using Preact and
 the `Preact` tab in the browser devtools inspects the ReactLynx app running in the
 worker.
 

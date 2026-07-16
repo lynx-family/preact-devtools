@@ -9,7 +9,7 @@
 		"prebuild": "npm run type-check",
 		"prepublishOnly": "npm run build:lynx",
 		"build": "node tools/build.mjs --browser chrome,edge,firefox,inline && npm run build:inline:types",
-		"build:chrome": "node tools/build.mjs --browser chrome",
+		"build:chrome": "node tools/build.mjs --browser chrome --debug",
 		"build:edge": "node tools/build.mjs --browser edge",
 		"build:firefox": "node tools/build.mjs --browser firefox",
 		"build:inline:types": "tsc -p tsconfig.inline.json",
@@ -93,7 +93,8 @@
 		"dist/",
 		"README.md",
 		"LICENSE",
-		"CHANGELOG.md"
+		"CHANGELOG.md",
+		"web-host.js"
 	],
 	"publishConfig": {
 		"access": "public"
