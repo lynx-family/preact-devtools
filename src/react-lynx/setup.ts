@@ -287,6 +287,17 @@ export function setupReactLynx() {
 				};
 			}
 
+			// preact/devtools discovers the hook on globalThis, which is shared
+			// across cards in Lynx's shared-context mode — mount it there only
+			// while its initDevTools runs.
+			const mountHook = () => {
+				(globalThis as any).__PREACT_DEVTOOLS__ =
+					lynx.preactDevtoolsCtx.__PREACT_DEVTOOLS__;
+			};
+			const unmountHook = () => {
+				delete (globalThis as any).__PREACT_DEVTOOLS__;
+			};
+
 			// Must stay synchronous when modules are sync: deferring attach past
 			// the app's first render loses the initial commit for good.
 			const installHookModule = require("../shells/shared/installHook");
@@ -295,16 +306,26 @@ export function setupReactLynx() {
 				typeof (installHookModule as any).then === "function"
 			) {
 				(installHookModule as Promise<unknown>)
-					.then(() => Promise.resolve(require("preact/devtools")))
 					.then(() => {
+						mountHook();
+						return Promise.resolve(require("preact/devtools"));
+					})
+					.then(() => {
+						unmountHook();
 						console.log("[PREACT DEVTOOLS] Devtools initialized successfully");
 					})
 					.catch(e => {
+						unmountHook();
 						console.warn("[PREACT DEVTOOLS] Devtools failed to initialize:");
 						console.warn(e);
 					});
 			} else {
-				require("preact/devtools");
+				mountHook();
+				try {
+					require("preact/devtools");
+				} finally {
+					unmountHook();
+				}
 				console.log("[PREACT DEVTOOLS] Devtools initialized successfully");
 			}
 		} catch (e) {
