@@ -108,10 +108,7 @@ export function createHook(port: PortPageHook): DevtoolsHook {
 		number,
 		{ renderReasons?: boolean; hooks?: boolean; profiling?: boolean }
 	>();
-	// A preact instance must only be instrumented once: HMR update loops
-	// re-evaluate the devtools init and would otherwise register a new
-	// renderer on every cycle, ballooning `renderers` (and with it every
-	// `refresh` fan-out) without bound.
+	// A preact instance must only be instrumented once (HMR re-runs the init).
 	const attachedOptions = new WeakMap<object, number>();
 	let uid = 0;
 	let status: "connected" | "pending" | "disconnected" = "disconnected";

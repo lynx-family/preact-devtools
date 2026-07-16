@@ -6,9 +6,7 @@
 // Skip setup in test environment because `require` does not work
 // in vitest esm env, and `lynx.getDevtool` is not mocked yet
 if (process.env.NODE_ENV !== "test") {
-	// Devtools must never crash the hosting app: a top-level throw here takes
-	// the whole background chunk down with it. Keep every failure inside this
-	// try/catch and degrade to a warning instead.
+	// Devtools failures must never take the hosting app down.
 	try {
 		// We cannot use dynamic import here because
 		// dynamic import will generate a new lazy bundle

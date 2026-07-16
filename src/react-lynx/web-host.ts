@@ -1,19 +1,5 @@
-// Hosting-page helper for the web platform: importing this module bridges
-// every `lynx-view` on the page to the official Preact Devtools browser
-// extension, so the host needs no bespoke wiring:
-//
-//   import "@lynx-js/preact-devtools/web-host";
-//
-// Transport, in order of preference:
-// 1. `lynxView.devtoolMessagePort` — the per-card devtool pipe exposed by
-//    `@lynx-js/web-core` (point-to-point, multi-view/multi-tab safe). The
-//    card side surfaces it as `lynx.getDevtool()`.
-// 2. Fallback for older web-core versions without the port: the client's
-//    `BroadcastChannel('preact-devtools')` transport. Note this channel is
-//    origin-wide — debug one view per origin at a time on this path.
-
-// Keep in sync with `src/constants.ts` (`DevtoolsToClient`). This module is
-// intentionally dependency-free so it can be emitted as a standalone file.
+// Keep in sync with `src/constants.ts`; dependency-free so tsc emits a
+// standalone file.
 const DEVTOOLS_TO_CLIENT = "preact-devtools-to-client";
 const DEVTOOL_EVENT_TYPE = "PreactDevtools";
 const PORT_POLL_INTERVAL = 100;
@@ -29,16 +15,11 @@ function bridgePort(port: MessagePort) {
 	port.onmessage = (ev: MessageEvent) => {
 		const { type, data } = (ev.data ?? {}) as { type?: string; data?: string };
 		if (type !== DEVTOOL_EVENT_TYPE || typeof data !== "string") return;
-		// worker client -> extension (payload already carries
-		// `source: 'preact-page-hook'`)
 		try {
 			window.postMessage(JSON.parse(data), "*");
-		} catch {
-			// Malformed payloads must not break the page.
-		}
+		} catch {}
 	};
 	window.addEventListener("message", e => {
-		// extension -> worker client
 		if (
 			e.source === window &&
 			e.data &&
@@ -72,8 +53,6 @@ function bridgeBroadcastChannelFallback(channelName: string) {
 	});
 }
 
-// The client scopes its fallback channel via
-// `globalProps.preactDevtoolsChannel` when the host provides one.
 function fallbackChannelNameOf(view: Element): string {
 	try {
 		const raw = view.getAttribute("global-props");
@@ -93,7 +72,6 @@ function attachToView(view: Element) {
 
 	let attempts = 0;
 	const tryAttach = () => {
-		// Available once the card has started rendering.
 		const port = (view as { devtoolMessagePort?: MessagePort })
 			.devtoolMessagePort;
 		if (port) {
@@ -105,8 +83,6 @@ function attachToView(view: Element) {
 			setTimeout(tryAttach, PORT_POLL_INTERVAL);
 			return;
 		}
-		// Older web-core without the devtool port: fall back to the client's
-		// BroadcastChannel transport.
 		bridgeBroadcastChannelFallback(fallbackChannelNameOf(view));
 	};
 	tryAttach();

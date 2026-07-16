@@ -272,10 +272,7 @@ export function createAdapter(
 	});
 
 	listen("load-host-selection", () => {
-		// The browser extension mirrors the devtools' `$0` element selection onto
-		// the page hook. On hosts where the hook lives elsewhere (e.g. a ReactLynx
-		// background worker) there is no host DOM selection to map — skip instead
-		// of crashing the whole devtools message loop.
+		// No host DOM selection to map on hosts without a ctx hook.
 		const hook: DevtoolsHook | undefined = (window as any).__PREACT_DEVTOOLS__;
 		const selected = hook && hook.$0;
 		if (selected) {

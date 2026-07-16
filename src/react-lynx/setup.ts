@@ -4,18 +4,9 @@ import { __root, __page } from "@lynx-js/react/internal";
 export function setupReactLynx() {
 	if (__BACKGROUND__) {
 		try {
-			// Transport to the devtools panel:
-			// - native Lynx: the LDT CDP channel exposed via `lynx.getDevtool()`.
-			// - web platform (e.g. a web simulator): there is no `getDevtool`, but
-			//   the background worker shares a BroadcastChannel origin with the
-			//   hosting page, where a small bridge can relay messages to the
-			//   Preact Devtools browser extension (see README).
 			// @ts-ignore
 			const hasNativeDevtool = typeof lynx.getDevtool === "function";
 			const WebChannel = (globalThis as any).BroadcastChannel;
-			// BroadcastChannel broadcasts across the whole origin, so two tabs (or
-			// two views) debugging the same origin would cross-talk on the default
-			// name — the host can scope the channel per view through globalProps.
 			const webChannelName =
 				(lynx as any).__globalProps?.preactDevtoolsChannel ?? "preact-devtools";
 			const webChannel =
@@ -34,9 +25,7 @@ export function setupReactLynx() {
 			// @ts-ignore
 			lynx.preactDevtoolsCtx ||= {};
 
-			// Native Lynx implements the `getUniqueIdListBySnapshotId` lepus debug
-			// method used for Elements/screencast linkage; the web platform does
-			// not (yet). Hosts can override this before setup runs.
+			// The web main thread does not implement `getUniqueIdListBySnapshotId`.
 			lynx.preactDevtoolsCtx.supportsUniqueIdMapping ??= hasNativeDevtool;
 
 			const __DEBUG__ = lynx.preactDevtoolsCtx.__DEBUG__;
@@ -65,8 +54,6 @@ export function setupReactLynx() {
 				}
 				listeners[type].push(callback);
 			};
-			// One faulty listener must not break delivery to the rest (or crash
-			// the transport's onmessage handler).
 			const dispatch = (message: { source: any; type: any; data: any }) => {
 				for (let i = 0; i < (listeners["message"]?.length ?? 0); i++) {
 					try {
@@ -85,7 +72,6 @@ export function setupReactLynx() {
 				// eslint-disable-next-line @typescript-eslint/no-unused-vars
 				_targetOrigin,
 			) => {
-				// in-App to-self message
 				dispatch({ source, type, data });
 
 				if (__DEBUG__) {
@@ -301,16 +287,8 @@ export function setupReactLynx() {
 				};
 			}
 
-			// When ReactLynx is consumed as an *async* external bundle these
-			// become async modules (their `preact` import is mounted as a
-			// Promise), so a CJS require() returns a Promise of the namespace
-			// and we must chain them to keep the required order: the hook must
-			// be installed before `preact/devtools` connects to it.
-			//
-			// When modules are synchronous, attach synchronously: deferring to a
-			// microtask would let the app's first `root.render()` run *before*
-			// the options hooks are wrapped, and on a static app that first
-			// commit is the only one — the devtools would never see the tree.
+			// Must stay synchronous when modules are sync: deferring attach past
+			// the app's first render loses the initial commit for good.
 			const installHookModule = require("../shells/shared/installHook");
 			if (
 				installHookModule &&
