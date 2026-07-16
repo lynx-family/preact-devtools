@@ -46,12 +46,6 @@ export function createIdMappingState<T extends SharedVNode>(
 		},
 
 		updateIdToUniqueIdRelation: function (snapshotId: number, id: number) {
-			// Skip on hosts without the `getUniqueIdListBySnapshotId` lepus method.
-			if (
-				!(globalThis as any).lynx?.preactDevtoolsCtx?.supportsUniqueIdMapping
-			) {
-				return;
-			}
 			lynx
 				// @ts-expect-error type error
 				.getNativeApp()

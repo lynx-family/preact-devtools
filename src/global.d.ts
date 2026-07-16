@@ -16,13 +16,6 @@ declare global {
 	interface PreactDevtoolsCtx {
 		__DEBUG__?: boolean;
 		__PREACT_DEVTOOLS__?: import("./adapter/hook").DevtoolsHook;
-		/**
-		 * Whether the host's main thread implements the
-		 * `getUniqueIdListBySnapshotId` lepus debug method used to map vnodes to
-		 * native UI nodes (Elements/screencast linkage). Native Lynx does; the
-		 * web platform currently does not, so the mapping is skipped there.
-		 */
-		supportsUniqueIdMapping?: boolean;
 		lynx?: UnsafeLynx;
 		__page?: FiberElement;
 		__root?: BackgroundSnapshotInstance & {
