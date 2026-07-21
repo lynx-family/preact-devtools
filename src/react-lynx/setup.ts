@@ -5,20 +5,12 @@ export function setupReactLynx() {
 	if (__BACKGROUND__) {
 		try {
 			// @ts-ignore
-			const hasNativeDevtool = typeof lynx.getDevtool === "function";
-			const WebChannel = (globalThis as any).BroadcastChannel;
-			const webChannelName =
-				(lynx as any).__globalProps?.preactDevtoolsChannel ?? "preact-devtools";
-			const webChannel =
-				!hasNativeDevtool && typeof WebChannel === "function"
-					? new WebChannel(webChannelName)
-					: null;
-			if (!hasNativeDevtool && !webChannel) {
+			if (typeof lynx.getDevtool !== "function") {
 				throw new Error(
-					"No devtools transport is available: `lynx.getDevtool` is not a function " +
-						"(on native Lynx, please upgrade your LynxSDK to the latest version) " +
-						"and `BroadcastChannel` is not available (on the web platform, it is " +
-						"required to reach the devtools panel).",
+					"`lynx.getDevtool` is not a function: on native Lynx, please upgrade " +
+						"your LynxSDK to the latest version; on the web platform, please " +
+						"upgrade @lynx-js/web-core to a version with the devtool event " +
+						"channel.",
 				);
 			}
 
@@ -79,19 +71,15 @@ export function setupReactLynx() {
 						data,
 					});
 				}
-				if (hasNativeDevtool) {
-					// @ts-ignore
-					lynx.getDevtool().dispatchEvent({
-						type: "PreactDevtools",
-						data: JSON.stringify({
-							source,
-							type,
-							data,
-						}),
-					});
-				} else {
-					webChannel.postMessage({ source, type, data });
-				}
+				// @ts-ignore
+				lynx.getDevtool().dispatchEvent({
+					type: "PreactDevtools",
+					data: JSON.stringify({
+						source,
+						type,
+						data,
+					}),
+				});
 			};
 
 			const deliver = (dataObj: { source: any; type: any; data: any }) => {
@@ -101,14 +89,10 @@ export function setupReactLynx() {
 				const { source, type, data } = dataObj;
 				dispatch({ source, type, data });
 			};
-			if (hasNativeDevtool) {
-				// @ts-ignore
-				lynx.getDevtool().addEventListener("PreactDevtools", e => {
-					deliver(JSON.parse(e.data));
-				});
-			} else {
-				webChannel.onmessage = (e: { data: any }) => deliver(e.data);
-			}
+			// @ts-ignore
+			lynx.getDevtool().addEventListener("PreactDevtools", e => {
+				deliver(JSON.parse(e.data));
+			});
 
 			if (
 				typeof lynx.preactDevtoolsCtx.localStorage === "undefined" ||
