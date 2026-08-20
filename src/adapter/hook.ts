@@ -234,10 +234,19 @@ export function createHook(port: PortPageHook): DevtoolsHook {
 			const roots = new Map<any, Node>();
 
 			// currently we only support preact >= 10, later we can add another branch for major === 8
-			if (preactVersionMatch.major == 10) {
+			//
+			// The released Preact 11 line (11.0.0-rc.x, and lynx-family/
+			// internal-preact's `v11` branch) kept the v10 vnode architecture:
+			// upstream `main` descends from the pruning-based "v11-2" branch,
+			// not the backing-node rewrite that `adapter/11` (Internal nodes,
+			// `_vnodeId`) was written against. Route it through the v10
+			// adapter, which matches its runtime shape and carries the
+			// ReactLynx id-mapping wiring.
+			if (preactVersionMatch.major == 10 || preactVersionMatch.major == 11) {
 				const supports = {
 					renderReasons: !!config.Component,
 					hooks:
+						preactVersionMatch.major >= 11 ||
 						(preactVersionMatch.minor === 4 && preactVersionMatch.patch >= 1) ||
 						preactVersionMatch.minor > 4,
 					profiling: true,
