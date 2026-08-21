@@ -127,6 +127,31 @@ describe("createAdapter", () => {
 	});
 
 	describe("refresh", () => {
+		it("acknowledges a correlated refresh only after every renderer completes", () => {
+			const fake = createFakePort();
+			const firstRefresh = vi.fn(() => {
+				fake.port.send("operation_v2", [1]);
+			});
+			const secondRefresh = vi.fn(() => {
+				fake.port.send("root-order", [1]);
+			});
+			const renderers = new Map<number, Renderer>([
+				[1, { ...makeRenderer([]), refresh: firstRefresh }],
+				[2, { ...makeRenderer([]), refresh: secondRefresh }],
+			]);
+
+			createAdapter(fake.port, newProfiler(), renderers);
+			fireFromDevtools(fake, "refresh", { requestId: "refresh-42" });
+
+			expect(firstRefresh).toHaveBeenCalledTimes(1);
+			expect(secondRefresh).toHaveBeenCalledTimes(1);
+			expect(fake.sent).to.deep.equal([
+				{ type: "operation_v2", data: [1] },
+				{ type: "root-order", data: [1] },
+				{ type: "refresh-complete", data: { requestId: "refresh-42" } },
+			]);
+		});
+
 		it("re-sends attach so a late-connecting panel re-learns supports, then refreshes", () => {
 			// A panel that connected after mount missed the initial `attach`, so it
 			// never learned `supportsHooks`. The `refresh` handler must re-send
@@ -153,6 +178,9 @@ describe("createAdapter", () => {
 				supportsHooks: true,
 			});
 			expect(refresh).toHaveBeenCalledTimes(1);
+			expect(
+				fake.sent.filter(m => m.type === "refresh-complete"),
+			).to.deep.equal([]);
 		});
 
 		it("sends no attach when supports are unknown, but still refreshes", () => {

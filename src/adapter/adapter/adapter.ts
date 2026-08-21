@@ -200,7 +200,7 @@ export function createAdapter(
 		forAll(r => r.applyFilters(filters));
 	});
 
-	listen("refresh", () => {
+	listen("refresh", request => {
 		// A panel that connected after mount never received the initial `attach`,
 		// so it doesn't know which features (e.g. hooks) are supported. The browser
 		// shell replays this from the content-script's buffered queue; the Lynx
@@ -218,6 +218,9 @@ export function createAdapter(
 			}
 		}
 		forAll(r => r.refresh?.());
+		if (request && typeof request.requestId === "string") {
+			send("refresh-complete", { requestId: request.requestId });
+		}
 	});
 
 	// Profiler

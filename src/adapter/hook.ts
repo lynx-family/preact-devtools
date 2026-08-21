@@ -57,7 +57,8 @@ export interface DevtoolEvents {
 	attach: { id: ID; supportsProfiling: boolean };
 	initialized: null;
 	init: null;
-	refresh: null;
+	refresh: null | { requestId: string };
+	"refresh-complete": { requestId: string };
 	disconnect: null;
 	suspend: { id: ID; active: boolean };
 	"root-order-page": null;
