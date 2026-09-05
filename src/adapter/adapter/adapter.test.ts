@@ -68,6 +68,7 @@ function makeRenderer(rootMappings: RootData[]): Renderer {
 		getVNodeById: () => null,
 		getUniqueListIdById: () => null,
 		getUniqueListIdBySnapshotId: () => null,
+		getUniqueListIdByDom: () => null,
 		getIdByUniqueId: () => null,
 		getDisplayName: () => "",
 		findDomForVNode: () => null,
