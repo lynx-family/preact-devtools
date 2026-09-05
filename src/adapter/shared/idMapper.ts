@@ -12,6 +12,7 @@ export interface IdMappingState<T> {
 	nextId: ID;
 	getInstance: (vnode: T) => any;
 
+	bridge: InstanceIdBridge | undefined;
 	snapshotIdToId: Map<number, ID>;
 	idToUniqueIdList: Map<ID, number[] | undefined>;
 	uniqueIdToId: Map<number, ID>;
@@ -20,11 +21,67 @@ export interface IdMappingState<T> {
 	updateIdToUniqueIdRelation: (snapshotId: number, id: number) => void;
 }
 
+/**
+ * How the background instance behind a vnode (`vnode.__e`) is keyed, and how
+ * the main thread resolves that key to element unique ids.
+ *
+ * The snapshot runtime keys a `BackgroundSnapshotInstance` by `__id`; the
+ * Element Template runtime keys a `BackgroundElementTemplateInstance` by its
+ * handle id (`instanceId`). Both re-key on first hydration and announce it
+ * through a `GlobalEventEmitter` event.
+ */
+export interface InstanceIdBridge {
+	readInstanceId: (dom: any) => number;
+	lepusMethod: string;
+	lepusParam: string;
+	updateIdEvent: string;
+}
+
+export const snapshotBridge: InstanceIdBridge = {
+	readInstanceId: dom => dom.__id,
+	lepusMethod: "getUniqueIdListBySnapshotId",
+	lepusParam: "snapshotId",
+	updateIdEvent: "onBackgroundSnapshotInstanceUpdateId",
+};
+
+export const elementTemplateBridge: InstanceIdBridge = {
+	readInstanceId: dom => dom.instanceId,
+	lepusMethod: "getUniqueIdListByElementTemplateHandleId",
+	lepusParam: "handleId",
+	updateIdEvent: "onBackgroundElementTemplateInstanceUpdateId",
+};
+
+export const instanceIdBridges = [snapshotBridge, elementTemplateBridge];
+
+/**
+ * Picks the bridge for the runtime backend the ReactLynx runtime publishes.
+ * Resolved lazily (on the first vnode) because the runtime may register its
+ * backend after the devtools hook is installed.
+ */
+export function detectInstanceIdBridge(): InstanceIdBridge {
+	try {
+		return (
+			// @ts-ignore
+			lynx[Symbol.for("__REACT_LYNX_RUNTIME_BACKEND__")] === "Element Template"
+				? elementTemplateBridge
+				: snapshotBridge
+		);
+	} catch (e) {
+		return snapshotBridge;
+	}
+}
+
+function getBridge<T>(state: IdMappingState<T>): InstanceIdBridge {
+	return (state.bridge ??= detectInstanceIdBridge());
+}
+
 export function createIdMappingState<T extends SharedVNode>(
 	initial: number,
 	getInstance: (vnode: T) => any,
+	bridge?: InstanceIdBridge,
 ): IdMappingState<T> {
 	return {
+		bridge,
 		instToId: new Map(),
 		idToVNode: new Map(),
 		idToInst: new Map(),
@@ -46,12 +103,13 @@ export function createIdMappingState<T extends SharedVNode>(
 		},
 
 		updateIdToUniqueIdRelation: function (snapshotId: number, id: number) {
+			const bridge = getBridge(this);
 			lynx
 				// @ts-expect-error type error
 				.getNativeApp()
 				.callLepusMethod(
-					"getUniqueIdListBySnapshotId",
-					{ snapshotId },
+					bridge.lepusMethod,
+					{ [bridge.lepusParam]: snapshotId },
 					(ret: { uniqueIdList: number[] }) => {
 						if (ret?.uniqueIdList == null) {
 							// console.warn("Failed to get unique id for snapshot", snapshotId);
@@ -87,6 +145,18 @@ export function getUniqueListIdBySnapshotId<T>(
 	if (!id) return null;
 	return state.idToUniqueIdList.get(id) || null;
 }
+export function getUniqueListIdByDom<T>(
+	state: IdMappingState<T>,
+	dom: any,
+): number[] | null {
+	let snapshotId;
+	try {
+		snapshotId = getBridge(state).readInstanceId(dom);
+	} catch (e) {
+		return null;
+	}
+	return getUniqueListIdBySnapshotId(state, snapshotId);
+}
 export function getIdByUniqueId<T>(
 	state: IdMappingState<T>,
 	uniqueId: number,
@@ -121,7 +191,7 @@ export function updateVNodeId<T>(state: IdMappingState<T>, id: ID, vnode: T) {
 	let snapshotId;
 	try {
 		// @ts-ignore
-		snapshotId = vnode.__e.__id;
+		snapshotId = getBridge(state).readInstanceId(vnode.__e);
 	} catch (e) {
 		// When a component returns null/Fragment
 		// it will has no `__e` property, so it has
@@ -142,7 +212,7 @@ export function removeVNodeId<T>(state: IdMappingState<T>, vnode: T) {
 		let snapshotId;
 		try {
 			// @ts-ignore
-			snapshotId = vnode.__e.__id;
+			snapshotId = getBridge(state).readInstanceId(vnode.__e);
 		} catch (e) {
 			// When a component returns null/Fragment
 			// it will has no `__e` property, so it has
@@ -173,7 +243,7 @@ export function createVNodeId<T>(state: IdMappingState<T>, vnode: T) {
 	let snapshotId: number;
 	try {
 		// @ts-ignore
-		snapshotId = vnode.__e.__id;
+		snapshotId = getBridge(state).readInstanceId(vnode.__e);
 	} catch (e) {
 		// When a component returns null/Fragment
 		// it will has no `__e` property, so it has

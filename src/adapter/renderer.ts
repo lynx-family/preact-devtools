@@ -13,6 +13,7 @@ export interface Renderer<T extends SharedVNode = SharedVNode> {
 	getVNodeById(id: ID): T | null;
 	getUniqueListIdById(id: ID): number[] | null;
 	getUniqueListIdBySnapshotId(snapshotId: number): number[] | null;
+	getUniqueListIdByDom(dom: any): number[] | null;
 	getIdByUniqueId(uniqueId: number): ID | null;
 	getDisplayName(vnode: T): string;
 	findDomForVNode(id: ID): Array<HTMLElement | Text | null> | null;

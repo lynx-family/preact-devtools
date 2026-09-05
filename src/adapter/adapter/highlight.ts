@@ -54,11 +54,10 @@ export function createHightlighter(
 			let [first, _last] = dom;
 			if (first === null) return;
 
-			// @ts-expect-error This is ReactLynx BackgroundSnapshotInstance
-			const snapshotId = first.__id;
+			// `first` is the ReactLynx background instance behind the vnode
 			const rendererList = [...renderers.values()];
 			// Unlike Chrome extension, we only have one renderer here
-			const id = rendererList[0].getUniqueListIdBySnapshotId(snapshotId);
+			const id = rendererList[0].getUniqueListIdByDom(first);
 			if (id?.[0] == null) {
 				// It is as expected when list-item that is not in the viewport
 				// since lynx uses a virtual list, so it is not rendered in to main-thread
@@ -68,7 +67,6 @@ export function createHightlighter(
 				return;
 			}
 			port.send("preact-devtools-highlight", {
-				snapshotId,
 				uniqueId: id[0],
 			});
 

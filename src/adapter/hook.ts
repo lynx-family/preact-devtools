@@ -10,7 +10,7 @@ import parseSemverish from "./parse-semverish";
 import { PortPageHook } from "./adapter/port";
 import { PROFILE_RELOAD, STATS_RELOAD } from "../constants";
 import { newProfiler } from "./adapter/profiler";
-import { createIdMappingState } from "./shared/idMapper";
+import { createIdMappingState, instanceIdBridges } from "./shared/idMapper";
 import { bindingsV10 } from "./10/bindings";
 import { bindingsV11 } from "./11/bindings";
 
@@ -65,7 +65,7 @@ export interface DevtoolEvents {
 	"root-order": number[];
 	operation: number[];
 	operation_v2: number[];
-	"preact-devtools-highlight": { snapshotId: number; uniqueId: number };
+	"preact-devtools-highlight": { uniqueId: number };
 	"element-picked": { uniqueId: number };
 	"element-picked-vnode-id": { id: number };
 }
@@ -253,23 +253,18 @@ export function createHook(port: PortPageHook): DevtoolsHook {
 				};
 
 				const idMapper = createIdMappingState(namespace, bindings.getInstance);
-				lynx
-					.getJSModule("GlobalEventEmitter")
-					.removeAllListeners("onBackgroundSnapshotInstanceUpdateId");
-				lynx.getJSModule("GlobalEventEmitter").addListener(
-					"onBackgroundSnapshotInstanceUpdateId",
-					// @ts-expect-error
-					({
-						oldId,
-						newId,
-					}: {
-						backgroundSnapshotInstance: any;
-						oldId: number;
-						newId: number;
-					}) => {
-						idMapper.updateSnapshotId(oldId, newId);
-					},
-				);
+				for (const { updateIdEvent } of instanceIdBridges) {
+					lynx
+						.getJSModule("GlobalEventEmitter")
+						.removeAllListeners(updateIdEvent);
+					lynx.getJSModule("GlobalEventEmitter").addListener(
+						updateIdEvent,
+						// @ts-expect-error
+						({ oldId, newId }: { oldId: number; newId: number }) => {
+							idMapper.updateSnapshotId(oldId, newId);
+						},
+					);
+				}
 
 				const renderer = createRenderer(
 					port,

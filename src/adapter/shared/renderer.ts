@@ -14,6 +14,7 @@ import {
 	getIdByUniqueId,
 	getUniqueListIdById,
 	getUniqueListIdBySnapshotId,
+	getUniqueListIdByDom,
 	getVNodeById,
 	getVNodeId,
 	hasVNodeId,
@@ -141,6 +142,7 @@ export function createRenderer<T extends SharedVNode>(
 		getUniqueListIdById: id => getUniqueListIdById(ids, id),
 		getUniqueListIdBySnapshotId: snapshotId =>
 			getUniqueListIdBySnapshotId(ids, snapshotId),
+		getUniqueListIdByDom: dom => getUniqueListIdByDom(ids, dom),
 		getIdByUniqueId: uniqueId => getIdByUniqueId(ids, uniqueId),
 		getDisplayName(vnode) {
 			return bindings.getDisplayName(vnode, config);
