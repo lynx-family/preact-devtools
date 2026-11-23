@@ -21,8 +21,10 @@ export function createHightlighter(
 	 * hovering a node in the tree.
 	 */
 	let highlightRef: HTMLDivElement | null = null;
+	let highlightSeq = 0;
 
 	function destroyHighlight() {
+		highlightSeq++;
 		if (highlightRef) {
 			document.body.removeChild(highlightRef!);
 		}
@@ -55,22 +57,33 @@ export function createHightlighter(
 			if (first === null) return;
 
 			// @ts-expect-error This is ReactLynx BackgroundSnapshotInstance
-			const snapshotId = first.__id;
-			const rendererList = [...renderers.values()];
-			// Unlike Chrome extension, we only have one renderer here
-			const id = rendererList[0].getUniqueListIdBySnapshotId(snapshotId);
-			if (id?.[0] == null) {
-				// It is as expected when list-item that is not in the viewport
-				// since lynx uses a virtual list, so it is not rendered in to main-thread
-				// but the vdom exists in the background thread
-				// TODO: can we recognize this case and only warn on non-virtual list situations
-				// console.warn("Failed to get unique id for snapshot", snapshotId);
-				return;
-			}
-			port.send("preact-devtools-highlight", {
-				snapshotId,
-				uniqueId: id[0],
-			});
+			const snapshotId: number | undefined = first.__id;
+			if (snapshotId == null) return;
+
+			const seq = ++highlightSeq;
+			lynx
+				// @ts-expect-error type error
+				.getNativeApp()
+				.callLepusMethod(
+					"getUniqueIdListBySnapshotId",
+					{ snapshotId },
+					(ret: { uniqueIdList?: number[] } | null) => {
+						if (seq !== highlightSeq) return;
+						const uniqueId = ret?.uniqueIdList?.[0];
+						if (uniqueId == null) {
+							// It is as expected when list-item that is not in the viewport
+							// since lynx uses a virtual list, so it is not rendered in to main-thread
+							// but the vdom exists in the background thread
+							// TODO: can we recognize this case and only warn on non-virtual list situations
+							// console.warn("Failed to get unique id for snapshot", snapshotId);
+							return;
+						}
+						port.send("preact-devtools-highlight", {
+							snapshotId,
+							uniqueId,
+						});
+					},
+				);
 
 			// const nodeEnd = last ? getNearestElement(last) : null;
 			// if (node != null) {

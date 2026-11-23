@@ -66,9 +66,7 @@ function makeRenderer(rootMappings: RootData[]): Renderer {
 	return {
 		refresh: () => {},
 		getVNodeById: () => null,
-		getUniqueListIdById: () => null,
-		getUniqueListIdBySnapshotId: () => null,
-		getIdByUniqueId: () => null,
+		getIdBySnapshotId: () => null,
 		getDisplayName: () => "",
 		findDomForVNode: () => null,
 		findVNodeIdForDom: () => -1,
@@ -197,6 +195,135 @@ describe("createAdapter", () => {
 
 			expect(fake.sent.filter(m => m.type === "attach").length).to.equal(0);
 			expect(refresh).toHaveBeenCalledTimes(1);
+		});
+	});
+
+	describe("highlight", () => {
+		it("queries getUniqueIdListBySnapshotId lazily and ignores stale responses", () => {
+			const callbacks: Array<(ret: any) => void> = [];
+			const callLepusMethod = vi.fn((_method: any, _params: any, cb: any) => {
+				callbacks.push(cb);
+			});
+			const getNativeApp = vi
+				.spyOn(lynx as any, "getNativeApp")
+				.mockReturnValue({ callLepusMethod });
+
+			try {
+				const fake = createFakePort();
+				const vnodes = new Map<number, any>([
+					[10, { type: "view" }],
+					[20, { type: "view" }],
+				]);
+				const doms = new Map<number, any>([
+					[10, [{ __id: 100 }, { __id: 100 }]],
+					[20, [{ __id: 200 }, { __id: 200 }]],
+				]);
+				const renderer: Renderer = {
+					...makeRenderer([]),
+					getVNodeById: id => vnodes.get(id) ?? null,
+					findDomForVNode: id => doms.get(id) ?? null,
+				};
+				const renderers = new Map<number, Renderer>([[1, renderer]]);
+
+				createAdapter(fake.port, newProfiler(), renderers);
+				fireFromDevtools(fake, "highlight", 10);
+				fireFromDevtools(fake, "highlight", 20);
+
+				expect(callLepusMethod).toHaveBeenCalledTimes(2);
+				expect(callLepusMethod).toHaveBeenNthCalledWith(
+					1,
+					"getUniqueIdListBySnapshotId",
+					{ snapshotId: 100 },
+					expect.any(Function),
+				);
+				expect(callLepusMethod).toHaveBeenNthCalledWith(
+					2,
+					"getUniqueIdListBySnapshotId",
+					{ snapshotId: 200 },
+					expect.any(Function),
+				);
+
+				// First response arrives late and must be ignored.
+				callbacks[0]({ uniqueIdList: [1001] });
+				expect(fake.sent).to.deep.equal([]);
+
+				callbacks[1]({ uniqueIdList: [2001] });
+				expect(fake.sent).to.deep.equal([
+					{
+						type: "preact-devtools-highlight",
+						data: { snapshotId: 200, uniqueId: 2001 },
+					},
+				]);
+
+				// Clearing highlight invalidates any in-flight lookup.
+				fireFromDevtools(fake, "highlight", 10);
+				fireFromDevtools(fake, "highlight", null);
+				callbacks[2]({ uniqueIdList: [1001] });
+				expect(fake.sent.length).to.equal(1);
+			} finally {
+				getNativeApp.mockRestore();
+			}
+		});
+	});
+
+	describe("element-picked", () => {
+		it("resolves snapshotId lazily via getSnapshotIdByUniqueId and ignores stale responses", () => {
+			const callbacks: Array<(ret: any) => void> = [];
+			const callLepusMethod = vi.fn((_method: any, _params: any, cb: any) => {
+				callbacks.push(cb);
+			});
+			const getNativeApp = vi
+				.spyOn(lynx as any, "getNativeApp")
+				.mockReturnValue({ callLepusMethod });
+
+			try {
+				const fake = createFakePort();
+				const snapshotToVNodeId = new Map<number, number>([
+					[100, 10],
+					[200, 20],
+				]);
+				const renderer: Renderer = {
+					...makeRenderer([]),
+					getIdBySnapshotId: snapshotId =>
+						snapshotToVNodeId.get(snapshotId) ?? null,
+				};
+				const renderers = new Map<number, Renderer>([[1, renderer]]);
+
+				createAdapter(fake.port, newProfiler(), renderers);
+				fireFromDevtools(fake, "element-picked", { uniqueId: 1001 });
+				fireFromDevtools(fake, "element-picked", { uniqueId: 2001 });
+
+				expect(callLepusMethod).toHaveBeenCalledTimes(2);
+				expect(callLepusMethod).toHaveBeenNthCalledWith(
+					1,
+					"getSnapshotIdByUniqueId",
+					{ uniqueId: 1001 },
+					expect.any(Function),
+				);
+				expect(callLepusMethod).toHaveBeenNthCalledWith(
+					2,
+					"getSnapshotIdByUniqueId",
+					{ uniqueId: 2001 },
+					expect.any(Function),
+				);
+
+				// Stale response from the first pick is dropped.
+				callbacks[0]({ snapshotId: 100 });
+				expect(fake.sent).to.deep.equal([]);
+
+				callbacks[1]({ snapshotId: 200 });
+				expect(fake.sent).to.deep.equal([
+					{ type: "element-picked-vnode-id", data: { id: 20 } },
+				]);
+
+				// Disconnect invalidates an in-flight pick.
+				fireFromDevtools(fake, "element-picked", { uniqueId: 1001 });
+				fireFromDevtools(fake, "disconnect", null);
+				callbacks[2]({ snapshotId: 100 });
+				expect(fake.sent.length).to.equal(1);
+			} finally {
+				getNativeApp.mockRestore();
+			}
 		});
 	});
 });
