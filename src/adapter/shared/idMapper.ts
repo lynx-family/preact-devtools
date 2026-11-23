@@ -13,17 +13,37 @@ export interface IdMappingState<T> {
 	getInstance: (vnode: T) => any;
 
 	snapshotIdToId: Map<number, ID>;
-	idToUniqueIdList: Map<ID, number[] | undefined>;
-	uniqueIdToId: Map<number, ID>;
 
+	bindSnapshotId: (snapshotId: number, id: ID) => void;
 	updateSnapshotId: (oldId: number, newId: number) => void;
-	updateIdToUniqueIdRelation: (snapshotId: number, id: number) => void;
+	removeSnapshotId: (id: ID) => void;
 }
 
 export function createIdMappingState<T extends SharedVNode>(
 	initial: number,
 	getInstance: (vnode: T) => any,
 ): IdMappingState<T> {
+	const idToSnapshotId = new Map<ID, number>();
+	const snapshotOwners = new Map<number, Set<ID>>();
+
+	function forgetSnapshot(
+		state: IdMappingState<T>,
+		id: ID,
+		snapshotId: number,
+	) {
+		const owners = snapshotOwners.get(snapshotId);
+		if (owners) {
+			owners.delete(id);
+			if (owners.size === 0) snapshotOwners.delete(snapshotId);
+		}
+		if (state.snapshotIdToId.get(snapshotId) === id) {
+			state.snapshotIdToId.delete(snapshotId);
+			for (const otherId of owners || []) {
+				state.snapshotIdToId.set(snapshotId, otherId);
+			}
+		}
+	}
+
 	return {
 		instToId: new Map(),
 		idToVNode: new Map(),
@@ -32,40 +52,35 @@ export function createIdMappingState<T extends SharedVNode>(
 		getInstance,
 
 		snapshotIdToId: new Map(),
-		idToUniqueIdList: new Map(),
-		uniqueIdToId: new Map(),
+
+		bindSnapshotId: function (snapshotId: number, id: ID) {
+			const prevSnapshotId = idToSnapshotId.get(id);
+			if (prevSnapshotId !== undefined && prevSnapshotId !== snapshotId) {
+				forgetSnapshot(this, id, prevSnapshotId);
+			}
+			idToSnapshotId.set(id, snapshotId);
+			this.snapshotIdToId.set(snapshotId, id);
+			let owners = snapshotOwners.get(snapshotId);
+			if (!owners) {
+				owners = new Set();
+				snapshotOwners.set(snapshotId, owners);
+			}
+			owners.delete(id);
+			owners.add(id);
+		},
 
 		updateSnapshotId: function (oldId: number, newId: number) {
-			if (this.snapshotIdToId.has(oldId)) {
-				const id = this.snapshotIdToId.get(oldId)!;
-				this.snapshotIdToId.delete(oldId);
-				this.snapshotIdToId.set(newId, id);
-
-				this.updateIdToUniqueIdRelation(newId, id);
+			for (const id of [...(snapshotOwners.get(oldId) || [])]) {
+				this.bindSnapshotId(newId, id);
 			}
 		},
 
-		updateIdToUniqueIdRelation: function (snapshotId: number, id: number) {
-			lynx
-				// @ts-expect-error type error
-				.getNativeApp()
-				.callLepusMethod(
-					"getUniqueIdListBySnapshotId",
-					{ snapshotId },
-					(ret: { uniqueIdList: number[] }) => {
-						if (ret?.uniqueIdList == null) {
-							// console.warn("Failed to get unique id for snapshot", snapshotId);
-							return;
-						}
-						const { uniqueIdList } = ret;
-						this.idToUniqueIdList.set(id, uniqueIdList);
-						if (uniqueIdList != null) {
-							for (const uniqueId of uniqueIdList) {
-								this.uniqueIdToId.set(uniqueId, id);
-							}
-						}
-					},
-				);
+		removeSnapshotId: function (id: ID) {
+			const snapshotId = idToSnapshotId.get(id);
+			idToSnapshotId.delete(id);
+			if (snapshotId !== undefined) {
+				forgetSnapshot(this, id, snapshotId);
+			}
 		},
 	};
 }
@@ -73,25 +88,12 @@ export function createIdMappingState<T extends SharedVNode>(
 export function getVNodeById<T>(state: IdMappingState<T>, id: ID): T | null {
 	return state.idToVNode.get(id) || null;
 }
-export function getUniqueListIdById<T>(
-	state: IdMappingState<T>,
-	id: ID,
-): number[] | null {
-	return state.idToUniqueIdList.get(id) || null;
-}
-export function getUniqueListIdBySnapshotId<T>(
+
+export function getIdBySnapshotId<T>(
 	state: IdMappingState<T>,
 	snapshotId: number,
-): number[] | null {
-	const id = state.snapshotIdToId.get(snapshotId);
-	if (!id) return null;
-	return state.idToUniqueIdList.get(id) || null;
-}
-export function getIdByUniqueId<T>(
-	state: IdMappingState<T>,
-	uniqueId: number,
 ): ID | null {
-	return state.uniqueIdToId.get(uniqueId) || null;
+	return state.snapshotIdToId.get(snapshotId) ?? null;
 }
 
 export function hasVNodeId<T>(state: IdMappingState<T>, vnode: T) {
@@ -118,7 +120,7 @@ export function updateVNodeId<T>(state: IdMappingState<T>, id: ID, vnode: T) {
 	state.idToInst.set(id, inst);
 	state.idToVNode.set(id, vnode);
 
-	let snapshotId;
+	let snapshotId: number | undefined;
 	try {
 		// @ts-ignore
 		snapshotId = vnode.__e.__id;
@@ -126,11 +128,14 @@ export function updateVNodeId<T>(state: IdMappingState<T>, id: ID, vnode: T) {
 		// When a component returns null/Fragment
 		// it will has no `__e` property, so it has
 		// no related snapshotInstance.
+		state.removeSnapshotId(id);
 		return;
 	}
-	state.snapshotIdToId.set(snapshotId, id);
-
-	state.updateIdToUniqueIdRelation(snapshotId, id);
+	if (snapshotId == null) {
+		state.removeSnapshotId(id);
+		return;
+	}
+	state.bindSnapshotId(snapshotId, id);
 }
 
 export function removeVNodeId<T>(state: IdMappingState<T>, vnode: T) {
@@ -138,26 +143,7 @@ export function removeVNodeId<T>(state: IdMappingState<T>, vnode: T) {
 		const id = getVNodeId(state, vnode);
 		state.idToInst.delete(id);
 		state.idToVNode.delete(id);
-
-		let snapshotId;
-		try {
-			// @ts-ignore
-			snapshotId = vnode.__e.__id;
-		} catch (e) {
-			// When a component returns null/Fragment
-			// it will has no `__e` property, so it has
-			// no related snapshotInstance.
-			return;
-		}
-		state.snapshotIdToId.delete(snapshotId);
-
-		const uniqueIdList = state.idToUniqueIdList.get(id);
-		state.idToUniqueIdList.delete(id);
-		if (uniqueIdList != null) {
-			for (const uniqueId of uniqueIdList) {
-				state.uniqueIdToId.delete(uniqueId);
-			}
-		}
+		state.removeSnapshotId(id);
 	}
 	const inst = state.getInstance(vnode);
 	state.instToId.delete(inst);
@@ -170,7 +156,7 @@ export function createVNodeId<T>(state: IdMappingState<T>, vnode: T) {
 	state.idToInst.set(id, inst);
 	state.idToVNode.set(id, vnode);
 
-	let snapshotId: number;
+	let snapshotId: number | undefined;
 	try {
 		// @ts-ignore
 		snapshotId = vnode.__e.__id;
@@ -180,8 +166,8 @@ export function createVNodeId<T>(state: IdMappingState<T>, vnode: T) {
 		// no related snapshotInstance.
 		return id;
 	}
-	state.snapshotIdToId.set(snapshotId, id);
-
-	state.updateIdToUniqueIdRelation(snapshotId, id);
+	if (snapshotId != null) {
+		state.bindSnapshotId(snapshotId, id);
+	}
 	return id;
 }

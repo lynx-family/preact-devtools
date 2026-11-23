@@ -128,21 +128,35 @@ export function createAdapter(
 		else highlight.highlight(id);
 	});
 
+	let pickSeq = 0;
+
 	listen("element-picked", ({ uniqueId }) => {
 		if (uniqueId == null) return;
-		const rendererList = [...renderers.values()];
-		// Unlike Chrome extension, we only have one renderer here
-		const id = rendererList[0].getIdByUniqueId(uniqueId);
-		if (id != null) {
-			port.send("element-picked-vnode-id", {
-				id,
-			});
-		}
+		const seq = ++pickSeq;
+		lynx
+			// @ts-expect-error type error
+			.getNativeApp()
+			.callLepusMethod(
+				"getSnapshotIdByUniqueId",
+				{ uniqueId },
+				(ret: { snapshotId?: number } | null) => {
+					if (seq !== pickSeq || ret?.snapshotId == null) return;
+					const rendererList = [...renderers.values()];
+					// Unlike Chrome extension, we only have one renderer here
+					const id = rendererList[0]?.getIdBySnapshotId(ret.snapshotId);
+					if (id != null) {
+						port.send("element-picked-vnode-id", {
+							id,
+						});
+					}
+				},
+			);
 	});
 
 	listen("disconnect", () => {
 		// The devtools disconnected, clear any stateful
 		// ui elements we may be displaying.
+		pickSeq++;
 		highlight.destroy();
 	});
 

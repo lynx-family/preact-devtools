@@ -11,9 +11,7 @@ import { setIn, setInCopy } from "../shared/serialize";
 import { createStats, OperationInfo } from "../shared/stats";
 import { ProfilerState } from "../adapter/profiler";
 import {
-	getIdByUniqueId,
-	getUniqueListIdById,
-	getUniqueListIdBySnapshotId,
+	getIdBySnapshotId,
 	getVNodeById,
 	getVNodeId,
 	hasVNodeId,
@@ -138,10 +136,7 @@ export function createRenderer<T extends SharedVNode>(
 		},
 
 		getVNodeById: id => getVNodeById(ids, id),
-		getUniqueListIdById: id => getUniqueListIdById(ids, id),
-		getUniqueListIdBySnapshotId: snapshotId =>
-			getUniqueListIdBySnapshotId(ids, snapshotId),
-		getIdByUniqueId: uniqueId => getIdByUniqueId(ids, uniqueId),
+		getIdBySnapshotId: snapshotId => getIdBySnapshotId(ids, snapshotId),
 		getDisplayName(vnode) {
 			return bindings.getDisplayName(vnode, config);
 		},
